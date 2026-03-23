@@ -1,26 +1,52 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: 243 248 255;
+  --foreground: 15 23 42;
+  --muted: 232 241 255;
+  --muted-foreground: 71 85 105;
+  --card: 255 255 255;
+  --border: 191 219 254;
+  --primary: 37 99 235;
+  --primary-foreground: 239 246 255;
+}
+
+.dark {
+  --background: 9 12 20;
+  --foreground: 226 232 240;
+  --muted: 20 27 45;
+  --muted-foreground: 148 163 184;
+  --card: 15 23 42;
+  --border: 30 41 59;
+  --primary: 96 165 250;
+  --primary-foreground: 15 23 42;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: rgb(var(--background));
+  --color-foreground: rgb(var(--foreground));
+  --color-muted: rgb(var(--muted));
+  --color-muted-foreground: rgb(var(--muted-foreground));
+  --color-card: rgb(var(--card));
+  --color-border: rgb(var(--border));
+  --color-primary: rgb(var(--primary));
+  --color-primary-foreground: rgb(var(--primary-foreground));
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  @apply bg-background text-foreground font-sans;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Remove number input arrows - Chrome, Safari, Edge */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Remove number input arrows - Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
 }
