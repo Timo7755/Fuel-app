@@ -41,7 +41,6 @@ const cards = (summary: Summary) => [
 export default function SummaryCards({ summary }: Props) {
   return (
     <>
-      {/* Top pill: avg consumption with sparkline + add button */}
       <div className="mb-6 flex justify-center">
         <div className="inline-flex w-auto overflow-hidden rounded-xl border border-border shadow-sm bg-card">
           <div className="flex flex-col px-5 py-3">

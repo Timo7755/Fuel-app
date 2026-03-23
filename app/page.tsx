@@ -5,17 +5,22 @@ import {
 } from "@/lib/dashboard/get-dashboard-data";
 import FillUpTable from "@/app/compoments/dashboard/FillUpTable";
 import RangeSelector from "@/app/compoments/dashboard/RangeSelector";
+import VehicleSelector from "@/app/compoments/dashboard/VehicleSelector";
+import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";
 
 const VALID_RANGES: Range[] = ["1M", "3M", "1Y"];
 
 type Props = {
-  searchParams: Promise<{ range?: string; mode?: string }>;
+  searchParams: Promise<{ range?: string; mode?: string; vehicleId?: string }>;
 };
-
 export default async function Home({ searchParams }: Props) {
-  const { range: rangeParam, mode: modeParam } = await searchParams;
+  const {
+    range: rangeParam,
+    mode: modeParam,
+    vehicleId: vehicleIdParam,
+  } = await searchParams;
 
   const range: Range = VALID_RANGES.includes(rangeParam as Range)
     ? (rangeParam as Range)
@@ -23,14 +28,20 @@ export default async function Home({ searchParams }: Props) {
 
   const mode = modeParam === "calendar" ? "calendar" : "rolling";
 
+  const vehicleId = vehicleIdParam ? Number(vehicleIdParam) : undefined;
+
   try {
-    const { summary, fillUps } = await getDashboardData(range, mode);
+    const { summary, fillUps } = await getDashboardData(range, mode, vehicleId);
 
     return (
       <main className="mx-auto w-full max-w-5xl px-6 py-8">
         <div className="flex justify-end mb-2"></div>
         <SummaryCards summary={summary} />
         <RangeSelector />
+        <Suspense fallback={null}>
+          <VehicleSelector />
+        </Suspense>
+
         <FillUpTable data={fillUps} />
       </main>
     );

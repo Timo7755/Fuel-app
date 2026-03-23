@@ -4,12 +4,14 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import toast from "react-hot-toast";
+import AddVehicleModal from "./AddVehicleModal";
 
 type Vehicle = {
   id: number;
   name: string;
   brand: string | null;
   model: string | null;
+  fuelCategory: "PETROL" | "DIESEL";
 };
 
 type Props = {
@@ -42,9 +44,10 @@ export default function AddFillUpModal({ isOpen, onClose }: Props) {
   const [totalCost, setTotalCost] = useState("");
   const [odometerKm, setOdometerKm] = useState("");
   const [isFullTank, setIsFullTank] = useState(true);
-  const [fuelType, setFuelType] = useState<FuelType>("PETROL_95"); // NEW
+  const [fuelType, setFuelType] = useState<FuelType>("PETROL_95");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [addVehicleOpen, setAddVehicleOpen] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -76,7 +79,7 @@ export default function AddFillUpModal({ isOpen, onClose }: Props) {
         }
       } catch (e) {
         if (!ignore) {
-          setError("Can't load vehicles. Check /api/vehicles endpoint.");
+          setError("Can't load vehicles.");
           console.error(e);
         }
       } finally {
@@ -88,6 +91,21 @@ export default function AddFillUpModal({ isOpen, onClose }: Props) {
       ignore = true;
     };
   }, []);
+
+  // Auto-default fuel type when selected vehicle changes
+  useEffect(() => {
+    const selected = vehicles.find((v) => String(v.id) === vehicleId);
+    if (!selected) return;
+    setFuelType(selected.fuelCategory === "DIESEL" ? "DIESEL" : "PETROL_95");
+  }, [vehicleId, vehicles]);
+
+  async function reloadVehicles() {
+    const res = await fetch("/api/vehicles", { cache: "no-store" });
+    const data = (await res.json()) as Vehicle[];
+    setVehicles(data);
+    // Auto-select the last added vehicle
+    if (data.length > 0) setVehicleId(String(data[data.length - 1].id));
+  }
 
   const canSubmit = useMemo(
     () =>
@@ -115,7 +133,7 @@ export default function AddFillUpModal({ isOpen, onClose }: Props) {
         totalCost: Number(totalCost),
         odometerKm: odometerKm ? Number(odometerKm) : undefined,
         isFullTank,
-        fuelType, // NEW
+        fuelType,
       };
       const res = await fetch("/api/fillups", {
         method: "POST",
@@ -142,172 +160,218 @@ export default function AddFillUpModal({ isOpen, onClose }: Props) {
     }
   }
 
+  const selectedVehicle = vehicles.find((v) => String(v.id) === vehicleId);
+  const filteredFuelTypes = FUEL_TYPES.filter((ft) => {
+    if (!selectedVehicle) return true;
+    if (selectedVehicle.fuelCategory === "DIESEL") return ft.value === "DIESEL";
+    return ft.value === "PETROL_95" || ft.value === "PETROL_100";
+  });
+
   if (!isOpen) return null;
 
+  console.log("vehicleId:", vehicleId);
+  console.log("vehicles:", vehicles);
+  console.log("selectedVehicle:", selectedVehicle);
+  console.log("filteredFuelTypes:", filteredFuelTypes);
+
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-0 sm:p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="add-fillup-title"
-    >
-      <button
-        type="button"
-        onClick={onClose}
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        aria-label="Close"
+    <>
+      {/* AddVehicleModal nested inside — opens on top */}
+      <AddVehicleModal
+        isOpen={addVehicleOpen}
+        onClose={async () => {
+          setAddVehicleOpen(false);
+          await reloadVehicles();
+        }}
       />
 
-      <div className="relative z-10 w-full sm:max-w-md max-h-[95dvh] overflow-y-auto rounded-t-xl sm:rounded-xl border border-border bg-card p-4 shadow-xl">
-        <div className="mb-4 flex items-center justify-between">
-          <h2
-            id="add-fillup-title"
-            className="text-xl font-semibold tracking-tight"
-          >
-            New fill-up
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-md p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
-            aria-label="Close"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+      <div
+        className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-0 sm:p-4"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="add-fillup-title"
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+          aria-label="Close"
+        />
 
-        {loadingVehicles ? (
-          <p className="text-sm text-muted-foreground">Loading vehicles...</p>
-        ) : vehicles.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No vehicles found. Create one via <code>/api/vehicles</code> first.
-          </p>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Vehicle */}
-            <label className="flex flex-col gap-1">
-              <span className="text-sm text-muted-foreground">Car</span>
-              <select
-                value={vehicleId}
-                onChange={(e) => setVehicleId(e.target.value)}
-                className="rounded-md border border-border bg-background px-3 py-2 text-foreground outline-none transition focus:ring-2 focus:ring-primary/25"
-                required
+        <div className="relative z-10 w-full sm:max-w-md max-h-[95dvh] overflow-y-auto rounded-t-xl sm:rounded-xl border border-border bg-card p-4 shadow-xl">
+          <div className="mb-4 flex items-center justify-between">
+            <h2
+              id="add-fillup-title"
+              className="text-xl font-semibold tracking-tight"
+            >
+              New fill-up
+            </h2>
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-md p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+              aria-label="Close"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          {loadingVehicles ? (
+            <p className="text-sm text-muted-foreground">Loading vehicles...</p>
+          ) : vehicles.length === 0 ? (
+            // First time — no vehicles yet
+            <div className="flex flex-col items-center gap-3 py-4 text-center">
+              <p className="text-sm text-muted-foreground">
+                You need at least one vehicle before adding a fill-up.
+              </p>
+              <button
+                type="button"
+                onClick={() => setAddVehicleOpen(true)}
+                className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
               >
-                {vehicles.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    {v.name}
-                    {v.brand ? ` - ${v.brand}` : ""}
-                    {v.model ? ` ${v.model}` : ""}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            {/* Date */}
-            <label className="flex flex-col gap-1">
-              <span className="text-sm text-muted-foreground">Date</span>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full rounded-md border border-border bg-background px-3 py-2 text-foreground outline-none transition focus:ring-2 focus:ring-primary/25"
-                required
-              />
-            </label>
-
-            {/* Liters + Cost */}
-            <div className="grid grid-cols-2 gap-3">
+                + Add your first vehicle
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Vehicle */}
               <label className="flex flex-col gap-1">
-                <span className="text-sm text-muted-foreground">Liters</span>
+                <span className="text-sm text-muted-foreground">Car</span>
+                <select
+                  value={vehicleId}
+                  onChange={(e) => setVehicleId(e.target.value)}
+                  className="rounded-md border border-border bg-background px-3 py-2 text-foreground outline-none transition focus:ring-2 focus:ring-primary/25"
+                  required
+                >
+                  {vehicles.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {v.name}
+                      {v.brand ? ` - ${v.brand}` : ""}
+                      {v.model ? ` ${v.model}` : ""}
+                    </option>
+                  ))}
+                </select>
+                {/* Mobile: full button, Desktop: small text link */}
+                <button
+                  type="button"
+                  onClick={() => setAddVehicleOpen(true)}
+                  className="
+    mt-1 text-xs text-primary transition
+    sm:self-start sm:hover:underline
+    w-full rounded-md border border-primary px-3 py-2 text-sm font-medium hover:bg-primary/10
+    sm:w-auto sm:rounded-none sm:border-0 sm:p-0 sm:text-xs sm:font-normal sm:hover:bg-transparent
+  "
+                >
+                  + Add new vehicle
+                </button>
+              </label>
+
+              {/* Date */}
+              <label className="flex flex-col gap-1">
+                <span className="text-sm text-muted-foreground">Date</span>
                 <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={liters}
-                  onChange={(e) => setLiters(e.target.value)}
-                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-right tabular-nums text-foreground outline-none transition focus:ring-2 focus:ring-primary/25"
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-foreground outline-none transition focus:ring-2 focus:ring-primary/25"
                   required
                 />
               </label>
 
+              {/* Liters + Cost */}
+              <div className="grid grid-cols-2 gap-3">
+                <label className="flex flex-col gap-1">
+                  <span className="text-sm text-muted-foreground">Liters</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={liters}
+                    onChange={(e) => setLiters(e.target.value)}
+                    className="w-full rounded-md border border-border bg-background px-3 py-2 text-right tabular-nums text-foreground outline-none transition focus:ring-2 focus:ring-primary/25"
+                    required
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-sm text-muted-foreground">
+                    Cost (EUR)
+                  </span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={totalCost}
+                    onChange={(e) => setTotalCost(e.target.value)}
+                    className="w-full rounded-md border border-border bg-background px-3 py-2 text-right tabular-nums text-foreground outline-none transition focus:ring-2 focus:ring-primary/25"
+                    required
+                  />
+                </label>
+              </div>
+
+              {/* Fuel Type */}
+              <label className="flex flex-col gap-1">
+                <span className="text-sm text-muted-foreground">Fuel type</span>
+                <div
+                  className={`grid gap-2 ${filteredFuelTypes.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}
+                >
+                  {filteredFuelTypes.map((ft) => (
+                    <button
+                      key={ft.value}
+                      type="button"
+                      onClick={() => setFuelType(ft.value)}
+                      className={`rounded-md border px-3 py-2 text-sm font-medium transition
+          ${
+            fuelType === ft.value
+              ? "border-primary bg-primary text-primary-foreground"
+              : "border-border bg-background text-foreground hover:bg-muted"
+          }`}
+                    >
+                      {ft.label}
+                    </button>
+                  ))}
+                </div>
+              </label>
+
+              {/* Odometer */}
               <label className="flex flex-col gap-1">
                 <span className="text-sm text-muted-foreground">
-                  Cost (EUR)
+                  Odometer (km)
                 </span>
                 <input
                   type="number"
-                  step="0.01"
+                  step="0.1"
                   min="0"
-                  value={totalCost}
-                  onChange={(e) => setTotalCost(e.target.value)}
+                  value={odometerKm}
+                  onChange={(e) => setOdometerKm(e.target.value)}
                   className="w-full rounded-md border border-border bg-background px-3 py-2 text-right tabular-nums text-foreground outline-none transition focus:ring-2 focus:ring-primary/25"
-                  required
                 />
               </label>
-            </div>
 
-            {/* Fuel Type */}
-            <label className="flex flex-col gap-1">
-              <span className="text-sm text-muted-foreground">Fuel type</span>
-              <div className="grid grid-cols-3 gap-2">
-                {FUEL_TYPES.map((ft) => (
-                  <button
-                    key={ft.value}
-                    type="button"
-                    onClick={() => setFuelType(ft.value)}
-                    className={`rounded-md border px-3 py-2 text-sm font-medium transition
-                      ${
-                        fuelType === ft.value
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-border bg-background text-foreground hover:bg-muted"
-                      }`}
-                  >
-                    {ft.label}
-                  </button>
-                ))}
+              {/* Full tank + Submit */}
+              <div className="flex items-center justify-between pt-1">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={isFullTank}
+                    onChange={(e) => setIsFullTank(e.target.checked)}
+                    className="h-4 w-4 accent-primary"
+                  />
+                  <span className="text-sm text-foreground">Full tank</span>
+                </label>
+                <button
+                  type="submit"
+                  disabled={!canSubmit}
+                  className="rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {submitting ? "Saving..." : "Add fill-up"}
+                </button>
               </div>
-            </label>
+            </form>
+          )}
 
-            {/* Odometer */}
-            <label className="flex flex-col gap-1">
-              <span className="text-sm text-muted-foreground">
-                Odometer (km)
-              </span>
-              <input
-                type="number"
-                step="0.1"
-                min="0"
-                value={odometerKm}
-                onChange={(e) => setOdometerKm(e.target.value)}
-                className="w-full rounded-md border border-border bg-background px-3 py-2 text-right tabular-nums text-foreground outline-none transition focus:ring-2 focus:ring-primary/25"
-              />
-            </label>
-
-            {/* Full tank + Submit */}
-            <div className="flex items-center justify-between pt-1">
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={isFullTank}
-                  onChange={(e) => setIsFullTank(e.target.checked)}
-                  className="h-4 w-4 accent-primary"
-                />
-                <span className="text-sm text-foreground">Full tank</span>
-              </label>
-
-              <button
-                type="submit"
-                disabled={!canSubmit}
-                className="rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {submitting ? "Saving..." : "Add fill-up"}
-              </button>
-            </div>
-          </form>
-        )}
-
-        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+          {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

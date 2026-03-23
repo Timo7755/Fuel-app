@@ -8,6 +8,7 @@ export type Range = "1M" | "3M" | "1Y";
 export async function getDashboardData(
   range: Range = "1M",
   mode: string = "rolling",
+  vehicleId?: number,
 ): Promise<DashboardData> {
   // Read the session directly on the server — no cookie forwarding needed
   const session = await auth();
@@ -22,7 +23,11 @@ export async function getDashboardData(
 
   // One DB query — only fetch this user's fill-ups within the selected range
   const fillUps = await prisma.fuelFillUp.findMany({
-    where: { userId, date: { gte: fromDate } }, // gte = "greater than or equal"
+    where: {
+      userId,
+      date: { gte: fromDate }, // gte = "greater than or equal"
+      ...(vehicleId ? { vehicleId } : {}),
+    },
     orderBy: { date: "desc" },
     select: {
       // Only pull the columns we actually need — faster than SELECT *

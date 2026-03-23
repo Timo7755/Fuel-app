@@ -37,11 +37,11 @@ model FuelFillUp {
   totalCost  Float
   odometerKm Float?
   isFullTank Boolean  @default(true)
-  fuelType   FuelType @default(PETROL_95) 
+  fuelType   FuelType @default(PETROL_95)
   createdAt  DateTime @default(now())
 
   vehicleId Int
-  vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)

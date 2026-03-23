@@ -15,6 +15,7 @@ export default function RangeSelector() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const current = (searchParams.get("range") as Range) ?? "1M";
+  const vehicleId = searchParams.get("vehicleId");
   const { mode, toggle } = useRangeMode();
 
   return (
@@ -23,7 +24,7 @@ export default function RangeSelector() {
         {options.map((opt) => (
           <Link
             key={opt.value}
-            href={`?range=${opt.value}&mode=${mode}`}
+            href={`?range=${opt.value}&mode=${mode}${vehicleId ? `&vehicleId=${vehicleId}` : ""}`}
             className={`px-4 py-1.5 text-sm font-medium transition border-r border-border last:border-r-0
               ${
                 current === opt.value
@@ -42,7 +43,9 @@ export default function RangeSelector() {
             const next = mode === "rolling" ? "calendar" : "rolling";
             toggle(); // save to localStorage
             // Use router.replace instead of window.history to trigger server re-render
-            router.replace(`?range=${current}&mode=${next}`);
+            router.replace(
+              `?range=${current}&mode=${next}${vehicleId ? `&vehicleId=${vehicleId}` : ""}`,
+            );
           }}
           className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 mt-2 text-xs shadow-sm transition hover:bg-muted"
         >

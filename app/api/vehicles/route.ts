@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
         brand: body.brand ?? null,
         model: body.model ?? null,
         year: typeof body.year === "number" ? body.year : null,
+        fuelCategory: body.fuelCategory ?? "PETROL",
       },
     });
 
