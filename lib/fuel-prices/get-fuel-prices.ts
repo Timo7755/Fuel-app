@@ -28,7 +28,7 @@ export type Station = {
 export type NationalAverages = {
   petrol95: number | null;
   diesel: number | null;
-  petrol98: number | null;
+  petrol100: number | null;
   lpg: number | null;
   stationCount: number;
 };
@@ -61,7 +61,7 @@ export function getNationalAverages(stations: Station[]): NationalAverages {
   return {
     petrol95: avg("95"),
     diesel: avg("dizel"),
-    petrol98: avg("98"),
+    petrol100: avg("100"),
     lpg: avg("avtoplin-lpg"),
     stationCount: stations.length,
   };

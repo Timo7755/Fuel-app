@@ -1,7 +1,6 @@
 import type { Summary } from "@/lib/dashboard/types";
 import { Fuel, Droplets, Route, TrendingUp, Hash, Gauge } from "lucide-react";
 import AddFillUpButton from "./AddFillUpButton";
-
 type Props = { summary: Summary };
 
 const cards = (summary: Summary) => [

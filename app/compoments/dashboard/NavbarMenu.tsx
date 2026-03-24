@@ -50,7 +50,7 @@ export default function NavbarMenu({ name }: Props) {
         <button
           type="button"
           onClick={() => setCarsOpen(true)}
-          className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted"
+          className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted cursor-pointer"
         >
           <Car className="h-4 w-4" />
           My Cars
@@ -115,7 +115,7 @@ function LogoutButtonDesktop() {
     <button
       type="button"
       onClick={() => signOut({ callbackUrl: "/" })}
-      className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted"
+      className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted cursor-pointer"
     >
       <LogOut className="h-4 w-4" />
       Sign out

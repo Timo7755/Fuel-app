@@ -6,9 +6,13 @@ import AddFillUpModal from "./AddFillUpModal";
 
 type Props = {
   variant?: "full" | "compact";
+  onSuccess?: () => void;
 };
 
-export default function AddFillUpButton({ variant = "full" }: Props) {
+export default function AddFillUpButton({
+  variant = "full",
+  onSuccess,
+}: Props) {
   const [isOpen, setIsOpen] = useState(false);
 
   const buttonClassName =
@@ -22,12 +26,16 @@ export default function AddFillUpButton({ variant = "full" }: Props) {
         type="button"
         onClick={() => setIsOpen(true)}
         className={buttonClassName}
-        aria-label="Add fill-up"
+        style={{ cursor: "pointer" }}
       >
         <Plus className={variant === "compact" ? "h-6 w-6" : "h-5 w-5"} />
       </button>
 
-      <AddFillUpModal isOpen={isOpen} onClose={() => setIsOpen(false)} />
+      <AddFillUpModal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        onSuccess={onSuccess}
+      />
     </>
   );
 }

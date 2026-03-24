@@ -6,8 +6,12 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import type { FillUpEntry } from "@/lib/dashboard/types";
 import EditFillUpModal from "./EditFillUpModal";
+import type { Vehicle } from "@/lib/dashboard/types";
 
-type Props = { data: FillUpEntry[] };
+type Props = {
+  data: FillUpEntry[];
+  vehicles: Vehicle[];
+};
 
 const FUEL_BADGE: Record<
   FillUpEntry["fuelType"],
@@ -27,7 +31,7 @@ function formatDate(iso: string) {
   });
 }
 
-export default function FillUpTable({ data }: Props) {
+export default function FillUpTable({ data, vehicles }: Props) {
   const router = useRouter();
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [editingEntry, setEditingEntry] = useState<FillUpEntry | null>(null);
@@ -58,10 +62,27 @@ export default function FillUpTable({ data }: Props) {
   return (
     <>
       {editingEntry && (
-        <EditFillUpModal
-          entry={editingEntry}
-          onClose={() => setEditingEntry(null)}
-        />
+        <>
+          {vehicles && vehicles.find((v) => v.id === editingEntry.vehicleId) ? (
+            <EditFillUpModal
+              vehicle={vehicles.find((v) => v.id === editingEntry.vehicleId)!}
+              entry={editingEntry}
+              onClose={() => setEditingEntry(null)}
+            />
+          ) : (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+              <div className="bg-card p-6 rounded-xl border">
+                <p>Vehicle data not available. Please refresh.</p>
+                <button
+                  onClick={() => setEditingEntry(null)}
+                  className="mt-4 bg-primary text-primary-foreground px-4 py-2 rounded-md"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       <section className="mb-6">
@@ -156,7 +177,7 @@ export default function FillUpTable({ data }: Props) {
                   <button
                     onClick={() => setEditingEntry(entry)}
                     className="rounded p-1 text-muted-foreground transition hover:bg-blue-500/10 hover:text-blue-500"
-                    aria-label="Edit fill-up"
+                    style={{ cursor: "pointer" }}
                   >
                     <Pencil className="h-3.5 w-3.5" />
                   </button>
@@ -165,6 +186,7 @@ export default function FillUpTable({ data }: Props) {
                     disabled={isDeleting}
                     className="rounded p-1 text-muted-foreground transition hover:bg-red-500/10 hover:text-red-500 disabled:opacity-50"
                     aria-label="Delete fill-up"
+                    style={{ cursor: "pointer" }}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>

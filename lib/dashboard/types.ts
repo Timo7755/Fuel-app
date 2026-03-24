@@ -22,6 +22,15 @@ export type Summary = {
   fillUpsCount: number;
 };
 
+export type Vehicle = {
+  id: number;
+  name: string;
+  brand?: string | null;
+  model?: string | null;
+  year?: number | null;
+  fuelCategory: "PETROL" | "DIESEL";
+};
+
 // Each row in the history table
 export type FillUpEntry = {
   id: number;
@@ -31,9 +40,11 @@ export type FillUpEntry = {
   odometerKm: number | null;
   isFullTank: boolean;
   fuelType: "PETROL_95" | "PETROL_100" | "DIESEL";
+  vehicleId: number;
 };
 
 export type DashboardData = {
   summary: Summary;
   fillUps: FillUpEntry[];
+  vehicles: Vehicle[];
 };

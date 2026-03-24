@@ -6,7 +6,7 @@ import { Fuel } from "lucide-react";
 type Averages = {
   petrol95: number | null;
   diesel: number | null;
-  petrol98: number | null;
+  petrol100: number | null;
   lpg: number | null;
   stationCount: number;
 };
@@ -19,9 +19,9 @@ type FuelData = {
 };
 
 const FUEL_TYPES = [
-  { key: "petrol95" as const, label: "NMB-95" },
+  { key: "petrol95" as const, label: "Petrol 95" },
   { key: "diesel" as const, label: "Diesel" },
-  { key: "petrol98" as const, label: "NMB-98" },
+  { key: "petrol100" as const, label: "Petrol 100" },
   { key: "lpg" as const, label: "LPG" },
 ];
 

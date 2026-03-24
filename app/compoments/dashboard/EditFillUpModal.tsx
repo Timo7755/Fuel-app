@@ -4,10 +4,11 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import toast from "react-hot-toast";
-import type { FillUpEntry } from "@/lib/dashboard/types";
+import type { FillUpEntry, Vehicle } from "@/lib/dashboard/types";
 
 type Props = {
   entry: FillUpEntry;
+  vehicle: Vehicle;
   onClose: () => void;
 };
 
@@ -19,8 +20,12 @@ const FUEL_TYPES = [
 
 type FuelType = (typeof FUEL_TYPES)[number]["value"];
 
-export default function EditFillUpModal({ entry, onClose }: Props) {
+export default function EditFillUpModal({ entry, vehicle, onClose }: Props) {
   const router = useRouter();
+  const isDieselVehicle = vehicle.fuelCategory === "DIESEL";
+  const allowedFuelTypes: FuelType[] = isDieselVehicle
+    ? ["DIESEL"]
+    : ["PETROL_95", "PETROL_100"];
 
   // Pre-fill all fields with the existing entry data
   const [date, setDate] = useState(entry.date.slice(0, 10));
@@ -30,8 +35,11 @@ export default function EditFillUpModal({ entry, onClose }: Props) {
     entry.odometerKm !== null ? String(entry.odometerKm) : "",
   );
   const [isFullTank, setIsFullTank] = useState(entry.isFullTank);
-  const [fuelType, setFuelType] = useState<FuelType>(entry.fuelType);
   const [submitting, setSubmitting] = useState(false);
+  const initialFuelType: FuelType = allowedFuelTypes.includes(entry.fuelType)
+    ? entry.fuelType
+    : (allowedFuelTypes[0] as FuelType);
+  const [fuelType, setFuelType] = useState<FuelType>(initialFuelType);
 
   // Close on Escape key
   useEffect(() => {
@@ -92,7 +100,7 @@ export default function EditFillUpModal({ entry, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-0 sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-0 sm:p-2"
       role="dialog"
       aria-modal="true"
     >
@@ -161,17 +169,18 @@ export default function EditFillUpModal({ entry, onClose }: Props) {
           <label className="flex flex-col gap-1">
             <span className="text-sm text-muted-foreground">Fuel type</span>
             <div className="grid grid-cols-3 gap-2">
-              {FUEL_TYPES.map((ft) => (
+              {FUEL_TYPES.filter((ft) =>
+                allowedFuelTypes.includes(ft.value as FuelType),
+              ).map((ft) => (
                 <button
                   key={ft.value}
                   type="button"
-                  onClick={() => setFuelType(ft.value)}
-                  className={`rounded-md border px-3 py-2 text-sm font-medium transition
-                    ${
-                      fuelType === ft.value
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border bg-background text-foreground hover:bg-muted"
-                    }`}
+                  onClick={() => setFuelType(ft.value as FuelType)}
+                  className={`rounded-md border px-3 py-2 text-sm font-medium transition ${
+                    fuelType === ft.value
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-background text-foreground hover:bg-muted"
+                  }`}
                 >
                   {ft.label}
                 </button>
@@ -188,7 +197,8 @@ export default function EditFillUpModal({ entry, onClose }: Props) {
               min="0"
               value={odometerKm}
               onChange={(e) => setOdometerKm(e.target.value)}
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-right tabular-nums text-foreground outline-none transition focus:ring-2 focus:ring-primary/25"
+              className="w-full rounded-md border border-border bg-background px-3 py-2 text-center tabular-nums text-foreground outline-none transition focus:ring-2 focus:ring-primary/25"
+              placeholder="km"
             />
           </label>
 

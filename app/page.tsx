@@ -31,7 +31,11 @@ export default async function Home({ searchParams }: Props) {
   const vehicleId = vehicleIdParam ? Number(vehicleIdParam) : undefined;
 
   try {
-    const { summary, fillUps } = await getDashboardData(range, mode, vehicleId);
+    const { summary, fillUps, vehicles } = await getDashboardData(
+      range,
+      mode,
+      vehicleId,
+    );
 
     return (
       <main className="mx-auto w-full max-w-5xl px-6 py-8">
@@ -42,7 +46,7 @@ export default async function Home({ searchParams }: Props) {
           <VehicleSelector />
         </Suspense>
 
-        <FillUpTable data={fillUps} />
+        <FillUpTable data={fillUps} vehicles={vehicles} />
       </main>
     );
   } catch (error) {

@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { parseMode, getFromDate } from "./range";
-import type { DashboardData, FillUpEntry, Summary } from "./types";
+import type { DashboardData, FillUpEntry, Summary, Vehicle } from "./types";
 
 export type Range = "1M" | "3M" | "1Y";
 
@@ -31,6 +31,7 @@ export async function getDashboardData(
       odometerKm: true,
       isFullTank: true,
       fuelType: true,
+      vehicleId: true,
     },
   });
 
@@ -76,5 +77,20 @@ export async function getDashboardData(
     odometerKm: f.odometerKm ?? null,
   }));
 
-  return { summary, fillUps: formattedFillUps };
+  const vehicles = await prisma.vehicle.findMany({
+    where: {
+      fillUps: {
+        some: { userId }, // <- vehicles that have at least one fill-up by this user
+      },
+    },
+    select: {
+      id: true,
+      name: true,
+      brand: true,
+      model: true,
+      fuelCategory: true,
+    },
+  });
+
+  return { summary, fillUps: formattedFillUps, vehicles };
 }

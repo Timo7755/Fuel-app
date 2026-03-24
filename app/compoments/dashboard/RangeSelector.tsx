@@ -47,7 +47,7 @@ export default function RangeSelector() {
               `?range=${current}&mode=${next}${vehicleId ? `&vehicleId=${vehicleId}` : ""}`,
             );
           }}
-          className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 mt-2 text-xs shadow-sm transition hover:bg-muted"
+          className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 mt-2 text-xs shadow-sm transition hover:bg-muted cursor-pointer"
         >
           <span
             className={

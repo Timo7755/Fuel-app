@@ -29,6 +29,7 @@ export default function ThemeToggle() {
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
       className="rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground transition hover:bg-muted"
       type="button"
+      style={{ cursor: "pointer" }}
     >
       {theme === "dark" ? (
         <SunMedium className="h-4 w-4" />
