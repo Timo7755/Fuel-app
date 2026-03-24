@@ -60,7 +60,7 @@ function PriceBlock({
             <div key={f.key} className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">{f.label}</span>
               <span className="text-base font-bold">
-                €{averages?.[f.key]?.toFixed(2)}
+                {averages?.[f.key]?.toFixed(2)}€
               </span>
             </div>
           ))}

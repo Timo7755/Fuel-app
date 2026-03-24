@@ -354,7 +354,7 @@ export default function AddFillUpModal({ isOpen, onClose, onSuccess }: Props) {
                 <div className="flex items-center gap-2">
                   {currentRate && (
                     <span className="text-xs text-muted-foreground">
-                      avg €{currentRate.toFixed(3)}/L
+                      avg {currentRate.toFixed(3)}€ /L
                     </span>
                   )}
                   <button

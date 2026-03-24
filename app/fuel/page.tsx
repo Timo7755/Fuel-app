@@ -12,7 +12,6 @@ export default function FuelPage() {
         </p>
       </div>
       <FuelPriceCard />
-      {/* Map coming soon */}
     </main>
   );
 }
