@@ -5,14 +5,7 @@ import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import toast from "react-hot-toast";
 import AddVehicleModal from "./AddVehicleModal";
-
-type Vehicle = {
-  id: number;
-  name: string;
-  brand: string | null;
-  model: string | null;
-  fuelCategory: "PETROL" | "DIESEL";
-};
+import type { Vehicle } from "@/lib/dashboard/types";
 
 type Props = {
   isOpen: boolean;
@@ -106,6 +99,7 @@ export default function AddFillUpModal({ isOpen, onClose, onSuccess }: Props) {
         setLiters((num / currentRate).toFixed(2));
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [liters, totalCost, currentRate, autoCalc]);
 
   // Effect to reset the form when the modal is closed

@@ -60,7 +60,7 @@ function PriceBlock({
             <div key={f.key} className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">{f.label}</span>
               <span className="text-base font-bold">
-                €{averages?.[f.key]?.toFixed(3)}
+                €{averages?.[f.key]?.toFixed(2)}
               </span>
             </div>
           ))}
@@ -116,11 +116,28 @@ export default function FuelPriceCard() {
           const diff = (
             (data.averages.motorway.petrol95 ?? 0) -
             (data.averages.local.petrol95 ?? 0)
-          ).toFixed(3);
+          ).toFixed(2);
           return (
             <p className="mt-2 text-xs text-muted-foreground text-right">
               Motorway NMB-95 avg is{" "}
-              <span className="text-red-500 font-semibold">€{diff} more</span>{" "}
+              <span className="text-red-500 font-semibold">{diff}€ more</span>{" "}
+              than local stations
+            </p>
+          );
+        })()}
+
+      {!loading &&
+        data?.averages?.local &&
+        data?.averages?.motorway &&
+        (() => {
+          const diff = (
+            (data.averages.motorway.diesel ?? 0) -
+            (data.averages.local.diesel ?? 0)
+          ).toFixed(2);
+          return (
+            <p className="mt-2 text-xs text-muted-foreground text-right">
+              Motorway Diesel avg is{" "}
+              <span className="text-red-500 font-semibold">{diff}€ more</span>{" "}
               than local stations
             </p>
           );
