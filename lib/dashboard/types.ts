@@ -15,7 +15,8 @@ export type Summary = {
   range: string;
   totalFuelCost: number;
   totalLiters: number;
-  distanceKm: number;
+  distanceKm: number | null;
+
   litersPerKm: number | null;
   costPerKm: number | null;
   fillUpsCount: number;

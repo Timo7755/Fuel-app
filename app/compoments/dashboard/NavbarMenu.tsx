@@ -62,7 +62,12 @@ export default function NavbarMenu({ name }: Props) {
       {/* Mobile — hamburger */}
       <div className="flex sm:hidden items-center gap-2" ref={menuRef}>
         {name && (
-          <div className="px-4 py-2.5 text-sm font-medium">👤 {name}</div>
+          <Link
+            href="/"
+            className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground shadow-sm"
+          >
+            👤 {name}
+          </Link>
         )}
         <ThemeToggle />
         <button

@@ -21,7 +21,10 @@ const cards = (summary: Summary) => [
   },
   {
     label: "Distance",
-    value: `${summary.distanceKm.toFixed(1)} km`,
+    value:
+      summary.distanceKm !== null
+        ? `${summary.distanceKm.toFixed(1)} km`
+        : "N/A",
     icon: Route,
     color: "text-green-500",
     bg: "bg-green-500/10",

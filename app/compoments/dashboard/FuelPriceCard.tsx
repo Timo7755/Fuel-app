@@ -96,13 +96,13 @@ export default function FuelPriceCard() {
       <div className="flex flex-col sm:flex-row gap-3">
         <PriceBlock
           title="Local Stations"
-          icon="🏘️"
+          icon=""
           averages={data?.averages?.local ?? null}
           loading={loading}
         />
         <PriceBlock
           title="Motorway Stations"
-          icon="🛣️"
+          icon=""
           averages={data?.averages?.motorway ?? null}
           loading={loading}
         />

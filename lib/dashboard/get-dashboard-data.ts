@@ -10,27 +10,20 @@ export async function getDashboardData(
   mode: string = "rolling",
   vehicleId?: number,
 ): Promise<DashboardData> {
-  // Read the session directly on the server — no cookie forwarding needed
   const session = await auth();
-
-  // If somehow no session exists, stop here — don't leak other users' data
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   const userId = session.user.id;
-
-  // Convert "1M" / "3M" / "1Y" into an actual Date object (e.g. 30 days ago)
   const fromDate = getFromDate(range, parseMode(mode));
 
-  // One DB query — only fetch this user's fill-ups within the selected range
   const fillUps = await prisma.fuelFillUp.findMany({
     where: {
       userId,
-      date: { gte: fromDate }, // gte = "greater than or equal"
+      date: { gte: fromDate },
       ...(vehicleId ? { vehicleId } : {}),
     },
     orderBy: { date: "desc" },
     select: {
-      // Only pull the columns we actually need — faster than SELECT *
       id: true,
       date: true,
       liters: true,
@@ -41,21 +34,22 @@ export async function getDashboardData(
     },
   });
 
-  // Add up totals from the fetched rows — no second DB query needed
+  // All fill-ups count for cost and liters
   const totalLiters = fillUps.reduce((sum, f) => sum + f.liters, 0);
   const totalFuelCost = fillUps.reduce((sum, f) => sum + f.totalCost, 0);
 
-  // Sort oldest → newest so we can find the first and last odometer reading
-  const sorted = [...fillUps].sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-  );
+  // Only fill-ups with a valid odometer reading count for distance calculations
+  const sorted = [...fillUps]
+    .filter((f) => f.odometerKm !== null && f.odometerKm > 0) // ← key change
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
   const first = sorted[0]?.odometerKm ?? null;
   const last = sorted[sorted.length - 1]?.odometerKm ?? null;
 
-  // Distance = difference between first and last odometer reading in the period
-  const distanceKm = first !== null && last !== null ? last - first : 0;
+  const distanceKm =
+    first !== null && last !== null && last > first ? last - first : null; // ← null instead of 0 so UI can show "—" instead of "0 km"
 
-  // Important ! do not include the first fill-up in the consumption calculation
+  // Exclude first odometer entry from consumption (it's the baseline reading)
   const litersForConsumption = sorted
     .slice(1)
     .reduce((sum, f) => sum + f.liters, 0);
@@ -65,25 +59,21 @@ export async function getDashboardData(
     totalFuelCost,
     totalLiters,
     distanceKm,
-    // Use litersForConsumption (excludes first fill-up) for the L/km calculation
-    // multiply by 100 for l/100km
     litersPerKm:
-      distanceKm > 0 && litersForConsumption > 0
+      distanceKm && distanceKm > 0 && litersForConsumption > 0
         ? (litersForConsumption / distanceKm) * 100
         : null,
     costPerKm:
-      distanceKm > 0 && litersForConsumption > 0
+      distanceKm && distanceKm > 0 && litersForConsumption > 0
         ? totalFuelCost / distanceKm
         : null,
     fillUpsCount: fillUps.length,
   };
 
-  // Prisma returns Date objects — convert to ISO strings so they're
-  // serializable when passed from server component to client component
   const formattedFillUps: FillUpEntry[] = fillUps.map((f) => ({
     ...f,
     date: f.date.toISOString(),
-    odometerKm: f.odometerKm ?? null, // ?? null converts undefined to null
+    odometerKm: f.odometerKm ?? null,
   }));
 
   return { summary, fillUps: formattedFillUps };

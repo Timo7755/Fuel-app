@@ -27,6 +27,14 @@ const FUEL_TYPES = [
 
 type FuelType = (typeof FUEL_TYPES)[number]["value"];
 
+type FuelRates = {
+  petrol95: number | null;
+  diesel: number | null;
+  petrol98: number | null;
+  lpg: number | null;
+  stationCount: number;
+};
+
 function getTodayDateInputValue() {
   const now = new Date();
   const tzOffsetMs = now.getTimezoneOffset() * 60_000;
@@ -48,6 +56,63 @@ export default function AddFillUpModal({ isOpen, onClose }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [addVehicleOpen, setAddVehicleOpen] = useState(false);
+  const [fuelRates, setFuelRates] = useState<{
+    local: FuelRates;
+    motorway: FuelRates;
+  } | null>(null);
+  const [isMotorway, setIsMotorway] = useState(false);
+  const [focused, setFocused] = useState<"liters" | "cost" | null>(null);
+  const [autoCalc, setAutoCalc] = useState(true);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    fetch("/api/fuel-prices")
+      .then((res) => res.json())
+      .then((data) => setFuelRates(data.averages))
+      .catch(console.error);
+  }, [isOpen]);
+
+  const currentRate = useMemo(() => {
+    if (!fuelRates) return null;
+    const pool = isMotorway ? fuelRates.motorway : fuelRates.local;
+    if (!pool) return null;
+    if (fuelType === "PETROL_95" || fuelType === "PETROL_100")
+      return pool.petrol95;
+    if (fuelType === "DIESEL") return pool.diesel;
+    return null;
+  }, [fuelRates, isMotorway, fuelType]);
+
+  useEffect(() => {
+    if (!currentRate || !autoCalc) return;
+    if (focused === "liters") {
+      const num = Number(liters);
+      if (liters === "" || isNaN(num) || num <= 0) {
+        setTotalCost("");
+      } else {
+        setTotalCost((num * currentRate).toFixed(2));
+      }
+    } else if (focused === "cost") {
+      const num = Number(totalCost);
+      if (totalCost === "" || isNaN(num) || num <= 0) {
+        setLiters("");
+      } else {
+        setLiters((num / currentRate).toFixed(2));
+      }
+    }
+  }, [liters, totalCost, currentRate, autoCalc]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setLiters("");
+    setTotalCost("");
+    setOdometerKm("");
+    setDate(getTodayDateInputValue());
+    setIsFullTank(true);
+    setIsMotorway(false);
+    setAutoCalc(true);
+    setFocused(null);
+    setError(null);
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -92,7 +157,6 @@ export default function AddFillUpModal({ isOpen, onClose }: Props) {
     };
   }, []);
 
-  // Auto-default fuel type when selected vehicle changes
   useEffect(() => {
     const selected = vehicles.find((v) => String(v.id) === vehicleId);
     if (!selected) return;
@@ -103,7 +167,6 @@ export default function AddFillUpModal({ isOpen, onClose }: Props) {
     const res = await fetch("/api/vehicles", { cache: "no-store" });
     const data = (await res.json()) as Vehicle[];
     setVehicles(data);
-    // Auto-select the last added vehicle
     if (data.length > 0) setVehicleId(String(data[data.length - 1].id));
   }
 
@@ -151,6 +214,9 @@ export default function AddFillUpModal({ isOpen, onClose }: Props) {
       setOdometerKm("");
       setDate(getTodayDateInputValue());
       setFuelType("PETROL_95");
+      setIsMotorway(false);
+      setAutoCalc(true);
+      setFocused(null);
       router.refresh();
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Failed to create fill-up";
@@ -169,14 +235,8 @@ export default function AddFillUpModal({ isOpen, onClose }: Props) {
 
   if (!isOpen) return null;
 
-  console.log("vehicleId:", vehicleId);
-  console.log("vehicles:", vehicles);
-  console.log("selectedVehicle:", selectedVehicle);
-  console.log("filteredFuelTypes:", filteredFuelTypes);
-
   return (
     <>
-      {/* AddVehicleModal nested inside — opens on top */}
       <AddVehicleModal
         isOpen={addVehicleOpen}
         onClose={async () => {
@@ -219,7 +279,6 @@ export default function AddFillUpModal({ isOpen, onClose }: Props) {
           {loadingVehicles ? (
             <p className="text-sm text-muted-foreground">Loading vehicles...</p>
           ) : vehicles.length === 0 ? (
-            // First time — no vehicles yet
             <div className="flex flex-col items-center gap-3 py-4 text-center">
               <p className="text-sm text-muted-foreground">
                 You need at least one vehicle before adding a fill-up.
@@ -251,16 +310,10 @@ export default function AddFillUpModal({ isOpen, onClose }: Props) {
                     </option>
                   ))}
                 </select>
-                {/* Mobile: full button, Desktop: small text link */}
                 <button
                   type="button"
                   onClick={() => setAddVehicleOpen(true)}
-                  className="
-    mt-1 text-xs text-primary transition
-    sm:self-start sm:hover:underline
-    w-full rounded-md border border-primary px-3 py-2 text-sm font-medium hover:bg-primary/10
-    sm:w-auto sm:rounded-none sm:border-0 sm:p-0 sm:text-xs sm:font-normal sm:hover:bg-transparent
-  "
+                  className="mt-1 text-xs text-primary transition sm:self-start sm:hover:underline w-full rounded-md border border-primary px-3 py-2 text-sm font-medium hover:bg-primary/10 sm:w-auto sm:rounded-none sm:border-0 sm:p-0 sm:text-xs sm:font-normal sm:hover:bg-transparent"
                 >
                   + Add new vehicle
                 </button>
@@ -278,6 +331,55 @@ export default function AddFillUpModal({ isOpen, onClose }: Props) {
                 />
               </label>
 
+              {/* Motorway toggle */}
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Motorway</span>
+                <div className="flex items-center gap-2">
+                  {currentRate && (
+                    <span className="text-xs text-muted-foreground">
+                      avg €{currentRate.toFixed(3)}/L
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={isMotorway}
+                    onClick={() => setIsMotorway((v) => !v)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      isMotorway ? "bg-primary" : "bg-muted"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${
+                        isMotorway ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                </div>
+              </div>
+
+              {/* Auto-calc toggle */}
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">
+                  Auto-calculate
+                </span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={autoCalc}
+                  onClick={() => setAutoCalc((v) => !v)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    autoCalc ? "bg-primary" : "bg-muted"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${
+                      autoCalc ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
+
               {/* Liters + Cost */}
               <div className="grid grid-cols-2 gap-3">
                 <label className="flex flex-col gap-1">
@@ -287,6 +389,7 @@ export default function AddFillUpModal({ isOpen, onClose }: Props) {
                     step="0.01"
                     min="0"
                     value={liters}
+                    onFocus={() => setFocused("liters")}
                     onChange={(e) => setLiters(e.target.value)}
                     className="w-full rounded-md border border-border bg-background px-3 py-2 text-right tabular-nums text-foreground outline-none transition focus:ring-2 focus:ring-primary/25"
                     required
@@ -301,6 +404,7 @@ export default function AddFillUpModal({ isOpen, onClose }: Props) {
                     step="0.01"
                     min="0"
                     value={totalCost}
+                    onFocus={() => setFocused("cost")}
                     onChange={(e) => setTotalCost(e.target.value)}
                     className="w-full rounded-md border border-border bg-background px-3 py-2 text-right tabular-nums text-foreground outline-none transition focus:ring-2 focus:ring-primary/25"
                     required
@@ -319,12 +423,11 @@ export default function AddFillUpModal({ isOpen, onClose }: Props) {
                       key={ft.value}
                       type="button"
                       onClick={() => setFuelType(ft.value)}
-                      className={`rounded-md border px-3 py-2 text-sm font-medium transition
-          ${
-            fuelType === ft.value
-              ? "border-primary bg-primary text-primary-foreground"
-              : "border-border bg-background text-foreground hover:bg-muted"
-          }`}
+                      className={`rounded-md border px-3 py-2 text-sm font-medium transition ${
+                        fuelType === ft.value
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-background text-foreground hover:bg-muted"
+                      }`}
                     >
                       {ft.label}
                     </button>
