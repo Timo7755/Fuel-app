@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
 
 export async function GET() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const vehicles = await prisma.vehicle.findMany({
+      where: { userId: session.user.id },
       orderBy: { id: "asc" },
     });
-
     return NextResponse.json(vehicles);
   } catch (error) {
     console.error("Error fetching vehicles:", error);
@@ -18,9 +24,13 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
-
     if (!body?.name || typeof body.name !== "string") {
       return NextResponse.json(
         { error: "Vehicle name is required" },
@@ -35,6 +45,7 @@ export async function POST(request: NextRequest) {
         model: body.model ?? null,
         year: typeof body.year === "number" ? body.year : null,
         fuelCategory: body.fuelCategory ?? "PETROL",
+        userId: session.user.id,
       },
     });
 

@@ -17,6 +17,9 @@ model Vehicle {
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
   fillUps      FuelFillUp[]
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum FuelCategory {
@@ -56,6 +59,8 @@ model User {
   accounts      Account[]
   sessions      Session[]
   fillUps       FuelFillUp[]
+  vehicles Vehicle[]   
+
 }
 
 model Account {

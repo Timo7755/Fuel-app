@@ -60,7 +60,7 @@ function PriceBlock({
             <div key={f.key} className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">{f.label}</span>
               <span className="text-base font-bold">
-                {averages?.[f.key]?.toFixed(2)}€
+                {averages?.[f.key]?.toFixed(3)}€
               </span>
             </div>
           ))}
@@ -133,7 +133,7 @@ export default function FuelPriceCard() {
           const diff = (
             (data.averages.motorway.diesel ?? 0) -
             (data.averages.local.diesel ?? 0)
-          ).toFixed(2);
+          ).toFixed(3);
           return (
             <p className="mt-2 text-xs text-muted-foreground text-right">
               Motorway Diesel avg is{" "}
