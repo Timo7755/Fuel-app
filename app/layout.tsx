@@ -28,11 +28,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
         <Providers>
           <Navbar />
-          {children}
+          <div className="flex-1">{children}</div>
           <Toaster
             position="top-center"
             toastOptions={{
@@ -40,6 +40,9 @@ export default function RootLayout({
             }}
           />
         </Providers>
+        <footer className="py-4 text-center text-xs text-muted-foreground">
+          © 2026 Timotej Lovrec
+        </footer>
       </body>
     </html>
   );

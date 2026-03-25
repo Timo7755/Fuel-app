@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Menu, X, Car, LogOut, Fuel } from "lucide-react";
+import { Menu, X, Car, LogOut, Fuel, BarChart2 } from "lucide-react";
 import Link from "next/link";
 import ThemeToggle from "@/app/compoments/dashboard/ui/ThemeToggle";
 import ManageCarsModal from "@/app/compoments/dashboard/ManageCarsModal";
@@ -47,6 +47,13 @@ export default function NavbarMenu({ name }: Props) {
           <Fuel className="h-4 w-4" />
           Fuel Prices
         </Link>
+        <Link
+          href="/stats"
+          className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted"
+        >
+          <BarChart2 className="h-4 w-4" />
+          My Statistics
+        </Link>
         <button
           type="button"
           onClick={() => setCarsOpen(true)}
@@ -89,6 +96,16 @@ export default function NavbarMenu({ name }: Props) {
               <Fuel className="h-4 w-4" />
               Fuel Prices
             </Link>
+            <Link
+              href="/stats"
+              onClick={() => setMenuOpen(false)}
+              className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition"
+            >
+              <BarChart2 className="h-4 w-4" />
+              My Stats
+            </Link>
+            <div className="border-t border-border" />
+
             <div className="border-t border-border" />
             <button
               type="button"

@@ -117,79 +117,130 @@ export default function FillUpTable({ data, vehicles }: Props) {
             return (
               <div
                 key={entry.id}
-                className={`grid grid-cols-2 sm:grid-cols-6 gap-y-1 px-4 py-3 text-sm
-                  ${i !== data.length - 1 ? "border-b border-border" : ""}
-                  ${i % 2 === 0 ? "bg-card" : "bg-muted/30"}
-                  ${isDeleting ? "opacity-50" : ""}`}
+                className={`${i !== data.length - 1 ? "border-b border-border" : ""}
+        ${i % 2 === 0 ? "bg-card" : "bg-muted/30"}
+        ${isDeleting ? "opacity-50" : ""}`}
               >
-                <div className="flex items-center gap-2 col-span-2 sm:col-span-1 mb-1 sm:mb-0">
-                  <span className="font-medium text-foreground">
-                    {formatDate(entry.date)}
-                  </span>
-                  {entry.isFullTank && (
-                    <span className="rounded-full bg-green-500/10 px-1.5 py-0.5 text-xs text-green-600">
-                      Full
+                {/* ── MOBILE CARD (hidden on sm+) ── */}
+                <div className="sm:hidden px-4 py-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-foreground text-sm">
+                        {formatDate(entry.date)}
+                      </span>
+                      {entry.isFullTank && (
+                        <span className="rounded-full bg-green-500/10 px-1.5 py-0.5 text-xs text-green-600">
+                          Full
+                        </span>
+                      )}
+                    </div>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${badge.className}`}
+                    >
+                      {badge.label}
                     </span>
+                  </div>
+
+                  <div className="grid grid-cols-3 text-sm">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Liters</p>
+                      <p className="tabular-nums font-medium">
+                        {entry.liters.toFixed(2)} L
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Cost</p>
+                      <p className="tabular-nums font-medium">
+                        {entry.totalCost.toFixed(2)} €
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">€/L</p>
+                      <p className="tabular-nums font-medium">
+                        {(entry.totalCost / entry.liters).toFixed(3)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {entry.odometerKm !== null && (
+                    <p className="text-xs text-muted-foreground">
+                      Odometer: {entry.odometerKm.toLocaleString()} km
+                    </p>
                   )}
+
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      onClick={() => setEditingEntry(entry)}
+                      className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-border py-2 text-sm font-medium text-foreground transition hover:bg-muted"
+                    >
+                      <Pencil className="h-4 w-4" />
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(entry.id)}
+                      disabled={isDeleting}
+                      className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-red-200 py-2 text-sm font-medium text-red-500 transition hover:bg-red-500/10 disabled:opacity-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Delete
+                    </button>
+                  </div>
                 </div>
 
-                <div className="flex items-center">
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-semibold ${badge.className}`}
-                  >
-                    {badge.label}
-                  </span>
-                </div>
-
-                <div className="flex sm:justify-end items-center gap-0.5">
-                  <span className="text-xs text-muted-foreground sm:hidden">
-                    Liters:{" "}
-                  </span>
-                  <span className="tabular-nums text-foreground">
-                    {entry.liters.toFixed(2)} L
-                  </span>
-                </div>
-
-                <div className="flex sm:justify-end items-center gap-0.5">
-                  <span className="text-xs text-muted-foreground sm:hidden">
-                    Cost:{" "}
-                  </span>
-                  <span className="tabular-nums text-foreground">
-                    {entry.totalCost.toFixed(2)} €
-                  </span>
-                </div>
-
-                <div className="flex sm:justify-end items-center gap-0.5">
-                  <span className="text-xs text-muted-foreground sm:hidden">
-                    Odometer:{" "}
-                  </span>
-                  <span className="tabular-nums text-foreground">
-                    {entry.odometerKm !== null
-                      ? `${entry.odometerKm.toLocaleString()} km`
-                      : "—"}
-                  </span>
-                </div>
-
-                <div className="flex sm:justify-end items-center gap-1">
-                  <span className="tabular-nums text-foreground">
-                    {(entry.totalCost / entry.liters).toFixed(3)} €/L
-                  </span>
-                  <button
-                    onClick={() => setEditingEntry(entry)}
-                    className="rounded p-1 text-muted-foreground transition hover:bg-blue-500/10 hover:text-blue-500"
-                    style={{ cursor: "pointer" }}
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(entry.id)}
-                    disabled={isDeleting}
-                    className="rounded p-1 text-muted-foreground transition hover:bg-red-500/10 hover:text-red-500 disabled:opacity-50"
-                    aria-label="Delete fill-up"
-                    style={{ cursor: "pointer" }}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
+                {/* ── DESKTOP ROW (hidden on mobile) ── */}
+                <div className="hidden sm:grid sm:grid-cols-6 gap-y-1 px-4 py-3 text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-foreground">
+                      {formatDate(entry.date)}
+                    </span>
+                    {entry.isFullTank && (
+                      <span className="rounded-full bg-green-500/10 px-1.5 py-0.5 text-xs text-green-600">
+                        Full
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center">
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${badge.className}`}
+                    >
+                      {badge.label}
+                    </span>
+                  </div>
+                  <div className="flex justify-end items-center">
+                    <span className="tabular-nums">
+                      {entry.liters.toFixed(2)} L
+                    </span>
+                  </div>
+                  <div className="flex justify-end items-center">
+                    <span className="tabular-nums">
+                      {entry.totalCost.toFixed(2)} €
+                    </span>
+                  </div>
+                  <div className="flex justify-end items-center">
+                    <span className="tabular-nums">
+                      {entry.odometerKm !== null
+                        ? `${entry.odometerKm.toLocaleString()} km`
+                        : "—"}
+                    </span>
+                  </div>
+                  <div className="flex justify-end items-center gap-1">
+                    <span className="tabular-nums">
+                      {(entry.totalCost / entry.liters).toFixed(3)} €/L
+                    </span>
+                    <button
+                      onClick={() => setEditingEntry(entry)}
+                      className="rounded p-1 text-muted-foreground transition hover:bg-blue-500/10 hover:text-blue-500"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(entry.id)}
+                      disabled={isDeleting}
+                      className="rounded p-1 text-muted-foreground transition hover:bg-red-500/10 hover:text-red-500 disabled:opacity-50"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 </div>
               </div>
             );

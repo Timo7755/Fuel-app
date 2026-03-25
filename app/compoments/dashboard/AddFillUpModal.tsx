@@ -203,7 +203,10 @@ export default function AddFillUpModal({ isOpen, onClose, onSuccess }: Props) {
         date: `${date}T00:00:00.000Z`,
         liters: Number(liters),
         totalCost: Number(totalCost),
-        odometerKm: odometerKm ? Number(odometerKm) : undefined,
+        odometerKm: odometerKm
+          ? Number(odometerKm.replace(/\./g, ""))
+          : undefined,
+
         isFullTank,
         fuelType,
       };
@@ -234,6 +237,12 @@ export default function AddFillUpModal({ isOpen, onClose, onSuccess }: Props) {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function handleOdometerChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const digits = e.target.value.replace(/\D/g, "");
+    const formatted = digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    setOdometerKm(formatted);
   }
 
   // Memoized function to get the selected vehicle
@@ -464,11 +473,11 @@ export default function AddFillUpModal({ isOpen, onClose, onSuccess }: Props) {
                   Odometer Km (optional)
                 </span>
                 <input
-                  type="number"
-                  step="0.1"
-                  min="0"
+                  type="text"
+                  inputMode="numeric"
                   value={odometerKm}
-                  onChange={(e) => setOdometerKm(e.target.value)}
+                  onChange={handleOdometerChange}
+                  placeholder="example:100.000"
                   className="w-full rounded-md border border-border bg-background px-3 py-2 text-center tabular-nums text-foreground outline-none transition focus:ring-2 focus:ring-primary/25"
                 />
               </label>

@@ -32,7 +32,9 @@ export default function EditFillUpModal({ entry, vehicle, onClose }: Props) {
   const [liters, setLiters] = useState(String(entry.liters));
   const [totalCost, setTotalCost] = useState(String(entry.totalCost));
   const [odometerKm, setOdometerKm] = useState(
-    entry.odometerKm !== null ? String(entry.odometerKm) : "",
+    entry.odometerKm !== null
+      ? String(entry.odometerKm).replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+      : "",
   );
   const [isFullTank, setIsFullTank] = useState(entry.isFullTank);
   const [submitting, setSubmitting] = useState(false);
@@ -40,6 +42,12 @@ export default function EditFillUpModal({ entry, vehicle, onClose }: Props) {
     ? entry.fuelType
     : (allowedFuelTypes[0] as FuelType);
   const [fuelType, setFuelType] = useState<FuelType>(initialFuelType);
+
+  function handleOdometerChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const digits = e.target.value.replace(/\D/g, "");
+    const formatted = digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    setOdometerKm(formatted);
+  }
 
   // Close on Escape key
   useEffect(() => {
@@ -76,7 +84,7 @@ export default function EditFillUpModal({ entry, vehicle, onClose }: Props) {
           date: `${date}T00:00:00.000Z`,
           liters: Number(liters),
           totalCost: Number(totalCost),
-          odometerKm: odometerKm ? Number(odometerKm) : null,
+          odometerKm: odometerKm ? Number(odometerKm.replace(/\./g, "")) : null,
           isFullTank,
           fuelType,
         }),
@@ -192,13 +200,12 @@ export default function EditFillUpModal({ entry, vehicle, onClose }: Props) {
           <label className="flex flex-col gap-1">
             <span className="text-sm text-muted-foreground">Odometer (km)</span>
             <input
-              type="number"
-              step="0.1"
-              min="0"
+              type="text"
+              inputMode="numeric"
               value={odometerKm}
-              onChange={(e) => setOdometerKm(e.target.value)}
+              onChange={handleOdometerChange}
+              placeholder="example:100.000"
               className="w-full rounded-md border border-border bg-background px-3 py-2 text-center tabular-nums text-foreground outline-none transition focus:ring-2 focus:ring-primary/25"
-              placeholder="km"
             />
           </label>
 
