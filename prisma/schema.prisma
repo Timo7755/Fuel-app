@@ -97,3 +97,17 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
+
+ // for prices history 
+model FuelPriceSnapshot {
+  id             Int      @id @default(autoincrement())
+  capturedAt     DateTime @default(now())
+  localP95       Float?
+  localDiesel    Float?
+  localP100      Float?
+  localLpg       Float?
+  motorwayP95    Float?
+  motorwayDiesel Float?
+  motorwayP100   Float?
+  motorwayLpg    Float?
+}

@@ -8,7 +8,7 @@ export function LoginButton() {
       onClick={() =>
         signIn("google", { callbackUrl: "/" }, { prompt: "select_account" })
       }
-      className="flex w-full items-center justify-center gap-3 rounded-xl border border-border bg-background px-4 py-3 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted"
+      className="flex w-full items-center justify-center gap-3 rounded-xl border border-border bg-background px-4 py-3 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted cursor-pointer"
     >
       <svg className="h-5 w-5" viewBox="0 0 24 24">
         <path
