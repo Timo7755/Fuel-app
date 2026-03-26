@@ -116,7 +116,7 @@ export default function FuelPriceCard() {
           const diff = (
             (data.averages.motorway.petrol95 ?? 0) -
             (data.averages.local.petrol95 ?? 0)
-          ).toFixed(2);
+          ).toFixed(3);
           return (
             <p className="mt-2 text-xs text-muted-foreground text-right">
               Motorway NMB-95 avg is{" "}

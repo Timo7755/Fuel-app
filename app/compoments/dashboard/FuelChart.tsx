@@ -112,7 +112,7 @@ export default function FuelChart({ fillUps }: Props) {
       {/* Monthly spend */}
       <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
         <h2 className="text-sm font-semibold text-foreground mb-0.5">
-          Monthly spend
+          Monthly spending
         </h2>
         <p className="text-xs text-muted-foreground mb-4">
           Total fuel cost per calendar month
@@ -227,7 +227,7 @@ export default function FuelChart({ fillUps }: Props) {
       {hasKmData ? (
         <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
           <h2 className="text-sm font-semibold text-foreground mb-0.5">
-            Distance driven
+            See how much you drive per month
           </h2>
           <p className="text-xs text-muted-foreground mb-4">
             Estimated km driven per month
@@ -276,7 +276,7 @@ export default function FuelChart({ fillUps }: Props) {
       ) : (
         <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
           <h2 className="text-sm font-semibold text-foreground mb-0.5">
-            Distance driven
+            How much you drive per month
           </h2>
           <p className="text-xs text-muted-foreground mt-1">
             Enter odometer readings on your fill-ups to see monthly distance
