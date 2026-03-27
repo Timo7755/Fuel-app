@@ -31,6 +31,7 @@
   --chart-border: #bfdbfe;
   --chart-card: #ffffff;
   --chart-text: #0f172a;
+  --chart-amber: #d97706;
 }
 
 .dark {
@@ -42,6 +43,7 @@
   --chart-border: #1e293b;
   --chart-card: #0f172a;
   --chart-text: #e2e8f0;
+  --chart-amber: #fbbf24;
 }
 
 @theme inline {
