@@ -8,7 +8,8 @@ import toast from "react-hot-toast";
 type Vehicle = {
   id: number;
   name: string;
-  fuelCategory: "PETROL" | "DIESEL";
+  fuelCategory: "PETROL" | "DIESEL" | "LPG";
+  hasLpg: boolean;
 };
 
 type Props = {
@@ -19,6 +20,7 @@ type Props = {
 const FUEL_CATEGORIES = [
   { value: "PETROL", label: "Petrol" },
   { value: "DIESEL", label: "Diesel" },
+  { value: "LPG", label: "LPG only" },
 ] as const;
 
 type FuelCategory = (typeof FUEL_CATEGORIES)[number]["value"];
@@ -33,6 +35,7 @@ export default function ManageCarsModal({ isOpen, onClose }: Props) {
   const [editName, setEditName] = useState("");
   const [editFuelCategory, setEditFuelCategory] =
     useState<FuelCategory>("PETROL");
+  const [editHasLpg, setEditHasLpg] = useState(false);
 
   // Delete state
   const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -77,6 +80,7 @@ export default function ManageCarsModal({ isOpen, onClose }: Props) {
     setEditingId(v.id);
     setEditName(v.name);
     setEditFuelCategory(v.fuelCategory);
+    setEditHasLpg(v.hasLpg);
     setConfirmingId(null);
   }
 
@@ -94,6 +98,7 @@ export default function ManageCarsModal({ isOpen, onClose }: Props) {
         body: JSON.stringify({
           name: editName.trim(),
           fuelCategory: editFuelCategory,
+          hasLpg: editHasLpg,
         }),
       });
       if (!res.ok) throw new Error("Failed to update");
@@ -187,23 +192,40 @@ export default function ManageCarsModal({ isOpen, onClose }: Props) {
                       onChange={(e) => setEditName(e.target.value)}
                       className="w-full rounded-md border border-border bg-card px-3 py-1.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/25"
                     />
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
                       {FUEL_CATEGORIES.map((fc) => (
                         <button
                           key={fc.value}
                           type="button"
-                          onClick={() => setEditFuelCategory(fc.value)}
+                          onClick={() => {
+                            setEditFuelCategory(fc.value);
+                            if (fc.value === "LPG") setEditHasLpg(false);
+                          }}
                           className={`rounded-md border px-3 py-1.5 text-xs font-medium transition
-                            ${
-                              editFuelCategory === fc.value
-                                ? "border-primary bg-primary text-primary-foreground"
-                                : "border-border bg-background text-foreground hover:bg-muted"
-                            }`}
+        ${
+          editFuelCategory === fc.value
+            ? "border-primary bg-primary text-primary-foreground"
+            : "border-border bg-background text-foreground hover:bg-muted"
+        }`}
                         >
                           {fc.label}
                         </button>
                       ))}
                     </div>
+                    {editFuelCategory !== "LPG" && (
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={editHasLpg}
+                          onChange={(e) => setEditHasLpg(e.target.checked)}
+                          className="h-4 w-4 accent-primary"
+                        />
+                        <span className="text-sm text-foreground">
+                          Also has LPG (bi-fuel)
+                        </span>
+                      </label>
+                    )}
+
                     <div className="flex justify-end gap-2">
                       <button
                         type="button"
@@ -263,14 +285,25 @@ export default function ManageCarsModal({ isOpen, onClose }: Props) {
                       </span>
                       <span
                         className={`rounded-full px-2 py-0.5 text-xs font-semibold
-                        ${
-                          v.fuelCategory === "DIESEL"
-                            ? "bg-yellow-500/10 text-yellow-600"
-                            : "bg-green-500/10 text-green-600"
-                        }`}
+  ${
+    v.fuelCategory === "DIESEL"
+      ? "bg-yellow-500/10 text-yellow-600"
+      : v.fuelCategory === "LPG"
+        ? "bg-blue-500/10 text-blue-600"
+        : "bg-green-500/10 text-green-600"
+  }`}
                       >
-                        {v.fuelCategory === "DIESEL" ? "Diesel" : "Petrol"}
+                        {v.fuelCategory === "DIESEL"
+                          ? "Diesel"
+                          : v.fuelCategory === "LPG"
+                            ? "LPG"
+                            : "Petrol"}
                       </span>
+                      {v.hasLpg && v.fuelCategory !== "LPG" && (
+                        <span className="rounded-full px-2 py-0.5 text-xs font-semibold bg-blue-500/10 text-blue-600">
+                          +LPG
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center gap-1">
                       <button

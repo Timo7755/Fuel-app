@@ -14,7 +14,6 @@ export async function DELETE(
   const { id } = await params;
 
   try {
-    // first find the fill-up by id and make sure it belongs to the current user
     const fillUp = await prisma.fuelFillUp.findUnique({
       where: { id: Number(id) },
     });
@@ -53,7 +52,6 @@ export async function PATCH(
   try {
     const body = await req.json();
 
-    // check the ownership again
     const existing = await prisma.fuelFillUp.findUnique({
       where: { id: Number(id) },
     });

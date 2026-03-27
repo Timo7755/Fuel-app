@@ -28,10 +28,12 @@ export type Vehicle = {
   brand?: string | null;
   model?: string | null;
   year?: number | null;
-  fuelCategory: "PETROL" | "DIESEL";
+  fuelCategory: "PETROL" | "DIESEL" | "LPG";
+  hasLpg: boolean;
 };
 
-// Each row in the history table
+export type FuelType = "PETROL_95" | "PETROL_100" | "DIESEL" | "LPG";
+
 export type FillUpEntry = {
   id: number;
   date: string;
@@ -39,7 +41,7 @@ export type FillUpEntry = {
   totalCost: number;
   odometerKm: number | null;
   isFullTank: boolean;
-  fuelType: "PETROL_95" | "PETROL_100" | "DIESEL";
+  fuelType: FuelType;
   vehicleId: number;
 };
 
@@ -47,4 +49,5 @@ export type DashboardData = {
   summary: Summary;
   fillUps: FillUpEntry[];
   vehicles: Vehicle[];
+  availableFuelTypes: FuelType[];
 };

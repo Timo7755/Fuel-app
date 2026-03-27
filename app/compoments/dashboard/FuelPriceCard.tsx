@@ -49,6 +49,7 @@ function PriceBlock({
       </div>
 
       {loading ? (
+        // animate-pulse skeleton loading
         <div className="flex flex-col gap-2 animate-pulse">
           {[...Array(3)].map((_, i) => (
             <div key={i} className="h-7 w-full rounded bg-muted" />

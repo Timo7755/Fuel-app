@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { parseMode, getFromDate } from "./range";
-import type { DashboardData, FillUpEntry, Summary, Vehicle } from "./types";
+import type { DashboardData, FillUpEntry, Summary, FuelType } from "./types";
 
 export type Range = "1M" | "3M" | "1Y";
 
@@ -9,6 +9,7 @@ export async function getDashboardData(
   range: Range = "1M",
   mode: string = "rolling",
   vehicleId?: number,
+  fuelType?: FuelType,
 ): Promise<DashboardData> {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
@@ -16,7 +17,7 @@ export async function getDashboardData(
   const userId = session.user.id;
   const fromDate = getFromDate(range, parseMode(mode));
 
-  const fillUps = await prisma.fuelFillUp.findMany({
+  const allFillUps = await prisma.fuelFillUp.findMany({
     where: {
       userId,
       date: { gte: fromDate },
@@ -35,25 +36,39 @@ export async function getDashboardData(
     },
   });
 
+  const fillUps = fuelType
+    ? allFillUps.filter((f) => f.fuelType === fuelType)
+    : allFillUps;
+
   // All fill-ups count for cost and liters
   const totalLiters = fillUps.reduce((sum, f) => sum + f.liters, 0);
   const totalFuelCost = fillUps.reduce((sum, f) => sum + f.totalCost, 0);
 
-  // Only fill-ups with a valid odometer reading count for distance calculations
-  const sorted = [...fillUps]
-    .filter((f) => f.odometerKm !== null && f.odometerKm > 0) // ← key change
+  // only valid ones for distance calculations
+  const singleVehicle = !!vehicleId;
+  const sorted = [...allFillUps]
+
+    .filter((f) => f.odometerKm !== null && f.odometerKm > 0)
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   const first = sorted[0]?.odometerKm ?? null;
   const last = sorted[sorted.length - 1]?.odometerKm ?? null;
 
   const distanceKm =
-    first !== null && last !== null && last > first ? last - first : null; // ← null instead of 0 so UI can show "—" instead of "0 km"
+    singleVehicle && first !== null && last !== null && last > first
+      ? last - first
+      : null;
 
-  // Exclude first odometer entry from consumption (it's the baseline reading)
-  const litersForConsumption = sorted
-    .slice(1)
-    .reduce((sum, f) => sum + f.liters, 0);
+  const allLpg = sorted.slice(1).every((f) => f.fuelType === "LPG");
+
+  const litersForConsumption = singleVehicle
+    ? sorted
+        .slice(1)
+        .filter((f) =>
+          fuelType ? f.fuelType === fuelType : allLpg || f.fuelType !== "LPG",
+        )
+        .reduce((sum, f) => sum + f.liters, 0)
+    : 0;
 
   const summary: Summary = {
     range,
@@ -89,8 +104,13 @@ export async function getDashboardData(
       brand: true,
       model: true,
       fuelCategory: true,
+      hasLpg: true,
     },
   });
 
-  return { summary, fillUps: formattedFillUps, vehicles };
+  const availableFuelTypes = [
+    ...new Set(allFillUps.map((f) => f.fuelType)),
+  ] as FuelType[];
+
+  return { summary, fillUps: formattedFillUps, vehicles, availableFuelTypes };
 }

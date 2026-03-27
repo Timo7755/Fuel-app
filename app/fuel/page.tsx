@@ -10,14 +10,19 @@ export default async function FuelPage() {
     select: {
       capturedAt: true,
       localP95: true,
+      localDiesel: true,
+      localP100: true,
+      localLpg: true,
       motorwayP95: true,
+      motorwayDiesel: true,
+      motorwayP100: true,
+      motorwayLpg: true,
     },
   });
 
   const serialized = snapshots.map((s) => ({
+    ...s,
     capturedAt: s.capturedAt.toISOString(),
-    localP95: s.localP95,
-    motorwayP95: s.motorwayP95,
   }));
 
   return (

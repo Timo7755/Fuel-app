@@ -9,6 +9,8 @@
   --border: 191 219 254;
   --primary: 37 99 235;
   --primary-foreground: 239 246 255;
+  --chart-green: #16a34a;
+  --chart-purple: #7c3aed;
 }
 
 .dark {
@@ -20,6 +22,8 @@
   --border: 30 41 59;
   --primary: 96 165 250;
   --primary-foreground: 15 23 42;
+  --chart-green: #4ade80;
+  --chart-purple: #a78bfa;
 }
 
 :root {

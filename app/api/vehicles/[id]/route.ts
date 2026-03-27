@@ -43,7 +43,11 @@ export async function PUT(
 
     const updated = await prisma.vehicle.update({
       where: { id: Number(id) },
-      data: { name: body.name, fuelCategory: body.fuelCategory },
+      data: {
+        name: body.name,
+        fuelCategory: body.fuelCategory,
+        hasLpg: body.hasLpg === true,
+      },
     });
     return NextResponse.json(updated);
   } catch (error) {

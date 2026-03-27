@@ -17,6 +17,7 @@ const FUEL_TYPES = [
   { value: "PETROL_95", label: "Petrol 95" },
   { value: "PETROL_100", label: "Petrol 100" },
   { value: "DIESEL", label: "Diesel" },
+  { value: "LPG", label: "LPG" },
 ] as const;
 
 type FuelType = (typeof FUEL_TYPES)[number]["value"];
@@ -78,6 +79,8 @@ export default function AddFillUpModal({ isOpen, onClose, onSuccess }: Props) {
     if (fuelType === "PETROL_95") return pool.petrol95;
     if (fuelType === "PETROL_100") return pool.petrol100;
     if (fuelType === "DIESEL") return pool.diesel;
+    if (fuelType === "LPG") return pool.lpg;
+
     return null;
   }, [fuelRates, isMotorway, fuelType]);
 
@@ -166,7 +169,13 @@ export default function AddFillUpModal({ isOpen, onClose, onSuccess }: Props) {
   useEffect(() => {
     const selected = vehicles.find((v) => String(v.id) === vehicleId);
     if (!selected) return;
-    setFuelType(selected.fuelCategory === "DIESEL" ? "DIESEL" : "PETROL_95");
+    setFuelType(
+      selected.fuelCategory === "DIESEL"
+        ? "DIESEL"
+        : selected.fuelCategory === "LPG"
+          ? "LPG"
+          : "PETROL_95",
+    );
   }, [vehicleId, vehicles]);
 
   // Function to reload the vehicles
@@ -249,8 +258,16 @@ export default function AddFillUpModal({ isOpen, onClose, onSuccess }: Props) {
   const selectedVehicle = vehicles.find((v) => String(v.id) === vehicleId);
   const filteredFuelTypes = FUEL_TYPES.filter((ft) => {
     if (!selectedVehicle) return true;
-    if (selectedVehicle.fuelCategory === "DIESEL") return ft.value === "DIESEL";
-    return ft.value === "PETROL_95" || ft.value === "PETROL_100";
+    if (selectedVehicle.fuelCategory === "LPG") return ft.value === "LPG";
+    if (selectedVehicle.fuelCategory === "DIESEL")
+      return (
+        ft.value === "DIESEL" || (selectedVehicle.hasLpg && ft.value === "LPG")
+      );
+    return (
+      ft.value === "PETROL_95" ||
+      ft.value === "PETROL_100" ||
+      (selectedVehicle.hasLpg && ft.value === "LPG")
+    );
   });
 
   // If the modal is not open, return null

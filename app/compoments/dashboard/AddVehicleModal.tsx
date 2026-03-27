@@ -12,6 +12,7 @@ type Props = {
 const FUEL_CATEGORIES = [
   { value: "PETROL", label: "Petrol" },
   { value: "DIESEL", label: "Diesel" },
+  { value: "LPG", label: "LPG only" },
 ] as const;
 
 type FuelCategory = (typeof FUEL_CATEGORIES)[number]["value"];
@@ -21,6 +22,7 @@ export default function AddVehicleModal({ isOpen, onClose }: Props) {
   const [fuelCategory, setFuelCategory] = useState<FuelCategory>("PETROL");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasLpg, setHasLpg] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -60,6 +62,7 @@ export default function AddVehicleModal({ isOpen, onClose }: Props) {
         body: JSON.stringify({
           name: name.trim(),
           fuelCategory,
+          hasLpg,
         }),
       });
       if (!res.ok) {
@@ -131,23 +134,39 @@ export default function AddVehicleModal({ isOpen, onClose }: Props) {
 
           <label className="flex flex-col gap-1">
             <span className="text-sm text-muted-foreground">Fuel type</span>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               {FUEL_CATEGORIES.map((fc) => (
                 <button
                   key={fc.value}
                   type="button"
-                  onClick={() => setFuelCategory(fc.value)}
+                  onClick={() => {
+                    setFuelCategory(fc.value);
+                    if (fc.value === "LPG") setHasLpg(false);
+                  }}
                   className={`rounded-md border px-3 py-2 text-sm font-medium transition
-                    ${
-                      fuelCategory === fc.value
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border bg-background text-foreground hover:bg-muted"
-                    }`}
+          ${
+            fuelCategory === fc.value
+              ? "border-primary bg-primary text-primary-foreground"
+              : "border-border bg-background text-foreground hover:bg-muted"
+          }`}
                 >
                   {fc.label}
                 </button>
               ))}
             </div>
+            {fuelCategory !== "LPG" && (
+              <label className="flex items-center gap-2 cursor-pointer mt-1">
+                <input
+                  type="checkbox"
+                  checked={hasLpg}
+                  onChange={(e) => setHasLpg(e.target.checked)}
+                  className="h-4 w-4 accent-primary"
+                />
+                <span className="text-sm text-foreground">
+                  Also has LPG (bi-fuel)
+                </span>
+              </label>
+            )}
           </label>
 
           {error && <p className="text-sm text-red-600">{error}</p>}

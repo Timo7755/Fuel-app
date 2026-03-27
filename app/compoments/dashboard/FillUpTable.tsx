@@ -2,15 +2,17 @@
 
 import { useState } from "react";
 import { Pencil, Trash2 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import type { FillUpEntry } from "@/lib/dashboard/types";
 import EditFillUpModal from "./EditFillUpModal";
 import type { Vehicle } from "@/lib/dashboard/types";
+import { useRouter, useSearchParams } from "next/navigation";
+import type { FuelType } from "@/lib/dashboard/types";
 
 type Props = {
   data: FillUpEntry[];
   vehicles: Vehicle[];
+  availableFuelTypes: FuelType[];
 };
 
 const FUEL_BADGE: Record<
@@ -20,6 +22,7 @@ const FUEL_BADGE: Record<
   PETROL_95: { label: "95", className: "bg-green-500/10 text-green-600" },
   PETROL_100: { label: "100", className: "bg-purple-500/10 text-purple-600" },
   DIESEL: { label: "D", className: "bg-yellow-500/10 text-yellow-600" },
+  LPG: { label: "LPG", className: "bg-blue-500/10 text-blue-600" },
 };
 
 function formatDate(iso: string) {
@@ -31,8 +34,22 @@ function formatDate(iso: string) {
   });
 }
 
-export default function FillUpTable({ data, vehicles }: Props) {
+export default function FillUpTable({
+  data,
+  vehicles,
+  availableFuelTypes,
+}: Props) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const currentFuelType = searchParams.get("fuelType");
+
+  function selectFuelType(ft: FuelType | null) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (ft) params.set("fuelType", ft);
+    else params.delete("fuelType");
+    router.push(`?${params.toString()}`);
+  }
+
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [editingEntry, setEditingEntry] = useState<FillUpEntry | null>(null);
 
@@ -86,9 +103,40 @@ export default function FillUpTable({ data, vehicles }: Props) {
       )}
 
       <section className="mb-6">
-        <h2 className="mb-2 text-center text-lg font-semibold tracking-tight">
-          Fill-up History
-        </h2>
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-lg font-semibold tracking-tight">
+            Fill-up History
+          </h2>
+          {availableFuelTypes.length > 1 && (
+            <div className="flex gap-1.5">
+              <button
+                type="button"
+                onClick={() => selectFuelType(null)}
+                className={`rounded-md px-3 py-1 text-xs font-medium transition border ${
+                  !currentFuelType
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "border-border bg-card text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                All
+              </button>
+              {availableFuelTypes.map((ft) => (
+                <button
+                  key={ft}
+                  type="button"
+                  onClick={() => selectFuelType(ft)}
+                  className={`rounded-md px-3 py-1 text-xs font-medium transition border ${
+                    currentFuelType === ft
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "border-border bg-card text-muted-foreground hover:bg-muted"
+                  }`}
+                >
+                  {FUEL_BADGE[ft].label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
           <div className="hidden sm:grid sm:grid-cols-6 border-b border-border px-4 py-2 text-xs font-medium text-muted-foreground">
             <span>Date</span>

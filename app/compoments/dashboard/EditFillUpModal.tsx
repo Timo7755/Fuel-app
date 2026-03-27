@@ -16,16 +16,23 @@ const FUEL_TYPES = [
   { value: "PETROL_95", label: "Petrol 95" },
   { value: "PETROL_100", label: "Petrol 100" },
   { value: "DIESEL", label: "Diesel" },
+  { value: "LPG", label: "LPG" },
 ] as const;
 
 type FuelType = (typeof FUEL_TYPES)[number]["value"];
 
 export default function EditFillUpModal({ entry, vehicle, onClose }: Props) {
   const router = useRouter();
-  const isDieselVehicle = vehicle.fuelCategory === "DIESEL";
-  const allowedFuelTypes: FuelType[] = isDieselVehicle
-    ? ["DIESEL"]
-    : ["PETROL_95", "PETROL_100"];
+  const allowedFuelTypes: FuelType[] =
+    vehicle.fuelCategory === "LPG"
+      ? ["LPG"]
+      : vehicle.fuelCategory === "DIESEL"
+        ? vehicle.hasLpg
+          ? ["DIESEL", "LPG"]
+          : ["DIESEL"]
+        : vehicle.hasLpg
+          ? ["PETROL_95", "PETROL_100", "LPG"]
+          : ["PETROL_95", "PETROL_100"];
 
   // Pre-fill all fields with the existing entry data
   const [date, setDate] = useState(entry.date.slice(0, 10));

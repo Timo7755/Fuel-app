@@ -3,6 +3,8 @@ import {
   getDashboardData,
   type Range,
 } from "@/lib/dashboard/get-dashboard-data";
+import type { FuelType } from "@/lib/dashboard/types";
+
 import FillUpTable from "@/app/compoments/dashboard/FillUpTable";
 import RangeSelector from "@/app/compoments/dashboard/RangeSelector";
 import VehicleSelector from "@/app/compoments/dashboard/VehicleSelector";
@@ -13,13 +15,19 @@ export const dynamic = "force-dynamic";
 const VALID_RANGES: Range[] = ["1M", "3M", "1Y"];
 
 type Props = {
-  searchParams: Promise<{ range?: string; mode?: string; vehicleId?: string }>;
+  searchParams: Promise<{
+    range?: string;
+    mode?: string;
+    vehicleId?: string;
+    fuelType?: string;
+  }>;
 };
 export default async function Home({ searchParams }: Props) {
   const {
     range: rangeParam,
     mode: modeParam,
     vehicleId: vehicleIdParam,
+    fuelType: fuelTypeParam,
   } = await searchParams;
 
   const range: Range = VALID_RANGES.includes(rangeParam as Range)
@@ -31,11 +39,13 @@ export default async function Home({ searchParams }: Props) {
   const vehicleId = vehicleIdParam ? Number(vehicleIdParam) : undefined;
 
   try {
-    const { summary, fillUps, vehicles } = await getDashboardData(
-      range,
-      mode,
-      vehicleId,
-    );
+    const { summary, fillUps, vehicles, availableFuelTypes } =
+      await getDashboardData(
+        range,
+        mode,
+        vehicleId,
+        fuelTypeParam as FuelType | undefined,
+      );
 
     return (
       <main className="mx-auto w-full max-w-5xl px-6 py-8">
@@ -46,7 +56,11 @@ export default async function Home({ searchParams }: Props) {
           <VehicleSelector />
         </Suspense>
 
-        <FillUpTable data={fillUps} vehicles={vehicles} />
+        <FillUpTable
+          data={fillUps}
+          vehicles={vehicles}
+          availableFuelTypes={availableFuelTypes}
+        />
       </main>
     );
   } catch (error) {

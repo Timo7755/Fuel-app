@@ -16,6 +16,8 @@ export default function RangeSelector() {
   const router = useRouter();
   const current = (searchParams.get("range") as Range) ?? "1M";
   const vehicleId = searchParams.get("vehicleId");
+  const fuelType = searchParams.get("fuelType");
+
   const { mode, toggle } = useRangeMode();
 
   return (
@@ -24,7 +26,7 @@ export default function RangeSelector() {
         {options.map((opt) => (
           <Link
             key={opt.value}
-            href={`?range=${opt.value}&mode=${mode}${vehicleId ? `&vehicleId=${vehicleId}` : ""}`}
+            href={`?range=${opt.value}&mode=${mode}${vehicleId ? `&vehicleId=${vehicleId}` : ""}${fuelType ? `&fuelType=${fuelType}` : ""}`}
             className={`px-4 py-1.5 text-sm font-medium transition border-r border-border last:border-r-0
               ${
                 current === opt.value
@@ -41,10 +43,9 @@ export default function RangeSelector() {
         <button
           onClick={() => {
             const next = mode === "rolling" ? "calendar" : "rolling";
-            toggle(); // save to localStorage
-            // Use router.replace instead of window.history to trigger server re-render
+            toggle();
             router.replace(
-              `?range=${current}&mode=${next}${vehicleId ? `&vehicleId=${vehicleId}` : ""}`,
+              `?range=${current}&mode=${next}${vehicleId ? `&vehicleId=${vehicleId}` : ""}${fuelType ? `&fuelType=${fuelType}` : ""}`,
             );
           }}
           className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 mt-2 text-xs shadow-sm transition hover:bg-muted cursor-pointer"

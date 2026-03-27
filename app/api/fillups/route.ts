@@ -77,7 +77,8 @@ export async function POST(request: NextRequest) {
           typeof body.odometerKm === "number" ? body.odometerKm : null,
         isFullTank:
           typeof body.isFullTank === "boolean" ? body.isFullTank : true,
-        userId, // attach to logged-in user
+        fuelType: body.fuelType ?? "PETROL_95",
+        userId,
       },
     });
 
