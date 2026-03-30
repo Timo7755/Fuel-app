@@ -37,10 +37,10 @@ const TOOLTIP_STYLE = {
 };
 
 const FUEL_LINES = [
-  { key: "P95", color: "var(--chart-blue)" },
+  { key: "P95", color: "var(--chart-green" },
   { key: "Diesel", color: "var(--chart-amber)" },
   { key: "P100", color: "var(--chart-purple)" },
-  { key: "LPG", color: "var(--chart-green)" },
+  { key: "LPG", color: "var(--chart-blue)" },
 ];
 
 function PriceHistoryChart({
