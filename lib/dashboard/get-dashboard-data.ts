@@ -45,7 +45,11 @@ export async function getDashboardData(
   const totalFuelCost = fillUps.reduce((sum, f) => sum + f.totalCost, 0);
 
   // only valid ones for distance calculations
-  const singleVehicle = !!vehicleId;
+  const userVehicleCount = await prisma.vehicle.count({
+    where: { fillUps: { some: { userId } } },
+  });
+  const singleVehicle = !!vehicleId || userVehicleCount === 1;
+
   const sorted = [...allFillUps]
 
     .filter((f) => f.odometerKm !== null && f.odometerKm > 0)
