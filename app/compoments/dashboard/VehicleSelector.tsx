@@ -51,6 +51,14 @@ export default function VehicleSelector() {
     if (vehicleId) params.set("vehicleId", vehicleId);
     router.push(`?${params.toString()}`);
     setOpen(false);
+
+    fetch("/api/user/preferences", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        preferredVehicleId: vehicleId ? Number(vehicleId) : null,
+      }),
+    }).catch(console.error);
   }
 
   return (

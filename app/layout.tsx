@@ -18,6 +18,12 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Fuel Tracker",
   description: "Track your fuel consumption and expenses",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Gorivo",
+  },
 };
 
 export default function RootLayout({

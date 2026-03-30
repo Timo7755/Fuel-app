@@ -60,15 +60,33 @@ export async function getDashboardData(
       : null;
 
   const allLpg = sorted.slice(1).every((f) => f.fuelType === "LPG");
+  const hasMixedFuels =
+    sorted.some((f) => f.fuelType === "LPG") &&
+    sorted.some((f) => f.fuelType !== "LPG");
 
-  const litersForConsumption = singleVehicle
-    ? sorted
-        .slice(1)
-        .filter((f) =>
-          fuelType ? f.fuelType === fuelType : allLpg || f.fuelType !== "LPG",
-        )
-        .reduce((sum, f) => sum + f.liters, 0)
-    : 0;
+  const odometerCountForFuel = fuelType
+    ? sorted.filter((f) => f.fuelType === fuelType).length
+    : sorted.length;
+
+  const litersForConsumption =
+    singleVehicle && odometerCountForFuel >= 2
+      ? sorted
+          .slice(1)
+          .filter((f) => {
+            if (fuelType) return f.fuelType === fuelType;
+            if (hasMixedFuels) return false;
+            return allLpg || f.fuelType !== "LPG";
+          })
+          .reduce((sum, f) => sum + f.liters, 0)
+      : 0;
+
+  const consumptionNote = !singleVehicle
+    ? "Select a single car to see consumption"
+    : hasMixedFuels && !fuelType
+      ? "Select a fuel type to compare"
+      : odometerCountForFuel < 2
+        ? "Add more fill-ups with odometer readings"
+        : null;
 
   const summary: Summary = {
     range,
@@ -84,6 +102,7 @@ export async function getDashboardData(
         ? totalFuelCost / distanceKm
         : null,
     fillUpsCount: fillUps.length,
+    consumptionNote,
   };
 
   const formattedFillUps: FillUpEntry[] = fillUps.map((f) => ({
@@ -95,7 +114,7 @@ export async function getDashboardData(
   const vehicles = await prisma.vehicle.findMany({
     where: {
       fillUps: {
-        some: { userId }, // <- vehicles that have at least one fill-up by this user
+        some: { userId }, // must have at least one fill-up by the user
       },
     },
     select: {

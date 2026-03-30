@@ -53,13 +53,19 @@ export default function SummaryCards({ summary }: Props) {
               <div className="flex items-center gap-1.5">
                 <Gauge className="h-5 w-5 text-cyan-500" />
                 <span className="text-xl font-bold text-foreground">
-                  {summary.litersPerKm?.toFixed(2) ?? "N/A"}
+                  {summary.litersPerKm?.toFixed(2) ?? "—"}
                   <span className="ml-1 text-sm font-normal text-muted-foreground">
                     L/100km
                   </span>
                 </span>
               </div>
             </div>
+            {!summary.litersPerKm && summary.consumptionNote && (
+              <p className="text-xs text-muted-foreground">
+                {summary.consumptionNote}
+              </p>
+            )}
+
             <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
               <Hash className="h-3 w-3" />
               <span>{summary.fillUpsCount} fill-ups tracked</span>

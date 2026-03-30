@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Menu, X, Car, LogOut, Fuel, BarChart2 } from "lucide-react";
+import { Menu, X, Car, LogOut, Fuel, BarChart2, UserCheck } from "lucide-react";
 import Link from "next/link";
 import ThemeToggle from "@/app/compoments/dashboard/ui/ThemeToggle";
 import ManageCarsModal from "@/app/compoments/dashboard/ManageCarsModal";
@@ -40,6 +40,14 @@ export default function NavbarMenu({ name }: Props) {
             👤 {name}
           </Link>
         )}
+        <Link
+          href="/"
+          onClick={() => setMenuOpen(false)}
+          className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted"
+        >
+          <UserCheck className="h-4 w-4" />
+          Home
+        </Link>
         <Link
           href="/fuel"
           className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted"
@@ -89,6 +97,16 @@ export default function NavbarMenu({ name }: Props) {
         {menuOpen && (
           <div className="absolute right-4 top-14 z-50 w-48 rounded-xl border border-border bg-card shadow-lg overflow-hidden">
             <Link
+              href="/"
+              onClick={() => setMenuOpen(false)}
+              className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition"
+            >
+              <UserCheck className="h-4 w-4" />
+              Home
+            </Link>
+            <div className="border-t border-border" />
+
+            <Link
               href="/fuel"
               onClick={() => setMenuOpen(false)}
               className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition"
@@ -96,6 +114,7 @@ export default function NavbarMenu({ name }: Props) {
               <Fuel className="h-4 w-4" />
               Fuel Prices
             </Link>
+            <div className="border-t border-border" />
             <Link
               href="/stats"
               onClick={() => setMenuOpen(false)}
@@ -106,7 +125,6 @@ export default function NavbarMenu({ name }: Props) {
             </Link>
             <div className="border-t border-border" />
 
-            <div className="border-t border-border" />
             <button
               type="button"
               onClick={() => {

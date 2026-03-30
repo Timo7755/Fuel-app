@@ -21,6 +21,8 @@ model Vehicle {
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  preferredByUsers User[] @relation("UserPreferredVehicle")
+
 }
 
 enum FuelCategory {
@@ -63,6 +65,11 @@ model User {
   sessions      Session[]
   fillUps       FuelFillUp[]
   vehicles Vehicle[]   
+
+  preferredVehicleId Int?
+  preferredVehicle   Vehicle? @relation("UserPreferredVehicle", fields: [preferredVehicleId], references: [id], onDelete: SetNull)
+  preferredRange String?
+
 
 }
 

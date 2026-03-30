@@ -16,10 +16,10 @@ export type Summary = {
   totalFuelCost: number;
   totalLiters: number;
   distanceKm: number | null;
-
   litersPerKm: number | null;
   costPerKm: number | null;
   fillUpsCount: number;
+  consumptionNote: string | null;
 };
 
 export type Vehicle = {

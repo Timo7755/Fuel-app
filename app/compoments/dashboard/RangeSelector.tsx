@@ -27,6 +27,13 @@ export default function RangeSelector() {
           <Link
             key={opt.value}
             href={`?range=${opt.value}&mode=${mode}${vehicleId ? `&vehicleId=${vehicleId}` : ""}${fuelType ? `&fuelType=${fuelType}` : ""}`}
+            onClick={() => {
+              fetch("/api/user/preferences", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ preferredRange: opt.value }),
+              }).catch(console.error);
+            }}
             className={`px-4 py-1.5 text-sm font-medium transition border-r border-border last:border-r-0
               ${
                 current === opt.value

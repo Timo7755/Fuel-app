@@ -29,9 +29,6 @@ export default async function FuelPage() {
     <main className="mx-auto w-full max-w-5xl px-6 py-8">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">Fuel Prices</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Fuel prices for Slovenia
-        </p>
       </div>
       <FuelPriceCard />
       <FuelPriceHistoryChart snapshots={serialized} />

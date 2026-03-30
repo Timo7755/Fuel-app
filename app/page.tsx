@@ -4,7 +4,9 @@ import {
   type Range,
 } from "@/lib/dashboard/get-dashboard-data";
 import type { FuelType } from "@/lib/dashboard/types";
-
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 import FillUpTable from "@/app/compoments/dashboard/FillUpTable";
 import RangeSelector from "@/app/compoments/dashboard/RangeSelector";
 import VehicleSelector from "@/app/compoments/dashboard/VehicleSelector";
@@ -37,6 +39,29 @@ export default async function Home({ searchParams }: Props) {
   const mode = modeParam === "calendar" ? "calendar" : "rolling";
 
   const vehicleId = vehicleIdParam ? Number(vehicleIdParam) : undefined;
+
+  if (!vehicleId || !rangeParam) {
+    const session = await auth();
+    if (session?.user?.id) {
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { preferredVehicleId: true, preferredRange: true },
+      });
+
+      const wantsVehicle = !vehicleId && !!user?.preferredVehicleId;
+      const wantsRange = !rangeParam && !!user?.preferredRange;
+
+      if (wantsVehicle || wantsRange) {
+        const params = new URLSearchParams();
+        params.set("range", wantsRange ? user!.preferredRange! : range);
+        params.set("mode", mode);
+        if (wantsVehicle)
+          params.set("vehicleId", String(user!.preferredVehicleId));
+        if (fuelTypeParam) params.set("fuelType", fuelTypeParam);
+        redirect(`?${params.toString()}`);
+      }
+    }
+  }
 
   try {
     const { summary, fillUps, vehicles, availableFuelTypes } =
