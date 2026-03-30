@@ -17,18 +17,35 @@ export async function GET(req: NextRequest) {
   const localAvg = getNationalAverages(local);
   const motorwayAvg = getNationalAverages(motorway);
 
-  await prisma.fuelPriceSnapshot.create({
-    data: {
-      localP95: localAvg.petrol95,
-      localDiesel: localAvg.diesel,
-      localP100: localAvg.petrol100,
-      localLpg: localAvg.lpg,
-      motorwayP95: motorwayAvg.petrol95,
-      motorwayDiesel: motorwayAvg.diesel,
-      motorwayP100: motorwayAvg.petrol100,
-      motorwayLpg: motorwayAvg.lpg,
-    },
+  const latest = await prisma.fuelPriceSnapshot.findFirst({
+    orderBy: { capturedAt: "desc" },
   });
 
-  return Response.json({ ok: true, capturedAt: new Date() });
+  const changed =
+    !latest ||
+    latest.localP95 !== localAvg.petrol95 ||
+    latest.localDiesel !== localAvg.diesel ||
+    latest.localP100 !== localAvg.petrol100 ||
+    latest.localLpg !== localAvg.lpg ||
+    latest.motorwayP95 !== motorwayAvg.petrol95 ||
+    latest.motorwayDiesel !== motorwayAvg.diesel ||
+    latest.motorwayP100 !== motorwayAvg.petrol100 ||
+    latest.motorwayLpg !== motorwayAvg.lpg;
+
+  if (changed) {
+    await prisma.fuelPriceSnapshot.create({
+      data: {
+        localP95: localAvg.petrol95,
+        localDiesel: localAvg.diesel,
+        localP100: localAvg.petrol100,
+        localLpg: localAvg.lpg,
+        motorwayP95: motorwayAvg.petrol95,
+        motorwayDiesel: motorwayAvg.diesel,
+        motorwayP100: motorwayAvg.petrol100,
+        motorwayLpg: motorwayAvg.lpg,
+      },
+    });
+  }
+
+  return Response.json({ ok: true, changed, capturedAt: new Date() });
 }
