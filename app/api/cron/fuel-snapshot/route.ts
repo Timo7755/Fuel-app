@@ -21,16 +21,26 @@ export async function GET(req: NextRequest) {
     orderBy: { capturedAt: "desc" },
   });
 
+  const THRESHOLD = 0.005;
+
+  const twoWeeksAgo = new Date();
+  twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+  const forceUpdate = !latest || latest.capturedAt < twoWeeksAgo;
+
   const changed =
-    !latest ||
-    latest.localP95 !== localAvg.petrol95 ||
-    latest.localDiesel !== localAvg.diesel ||
-    latest.localP100 !== localAvg.petrol100 ||
-    latest.localLpg !== localAvg.lpg ||
-    latest.motorwayP95 !== motorwayAvg.petrol95 ||
-    latest.motorwayDiesel !== motorwayAvg.diesel ||
-    latest.motorwayP100 !== motorwayAvg.petrol100 ||
-    latest.motorwayLpg !== motorwayAvg.lpg;
+    forceUpdate ||
+    Math.abs((latest?.localP95 ?? 0) - (localAvg.petrol95 ?? 0)) > THRESHOLD ||
+    Math.abs((latest?.localDiesel ?? 0) - (localAvg.diesel ?? 0)) > THRESHOLD ||
+    Math.abs((latest?.localP100 ?? 0) - (localAvg.petrol100 ?? 0)) >
+      THRESHOLD ||
+    Math.abs((latest?.localLpg ?? 0) - (localAvg.lpg ?? 0)) > THRESHOLD ||
+    Math.abs((latest?.motorwayP95 ?? 0) - (motorwayAvg.petrol95 ?? 0)) >
+      THRESHOLD ||
+    Math.abs((latest?.motorwayDiesel ?? 0) - (motorwayAvg.diesel ?? 0)) >
+      THRESHOLD ||
+    Math.abs((latest?.motorwayP100 ?? 0) - (motorwayAvg.petrol100 ?? 0)) >
+      THRESHOLD ||
+    Math.abs((latest?.motorwayLpg ?? 0) - (motorwayAvg.lpg ?? 0)) > THRESHOLD;
 
   if (changed) {
     await prisma.fuelPriceSnapshot.create({
