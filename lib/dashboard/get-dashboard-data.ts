@@ -10,17 +10,29 @@ export async function getDashboardData(
   mode: string = "rolling",
   vehicleId?: number,
   fuelType?: FuelType,
+  month?: string,
 ): Promise<DashboardData> {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   const userId = session.user.id;
-  const fromDate = getFromDate(range, parseMode(mode));
+  const fromDate = month
+    ? new Date(`${month}-01T00:00:00.000Z`)
+    : getFromDate(range, parseMode(mode));
+
+  const toDate = month
+    ? new Date(
+        new Date(`${month}-01T00:00:00.000Z`).setMonth(
+          new Date(`${month}-01T00:00:00.000Z`).getMonth() + 1,
+        ) - 1,
+      )
+    : null;
 
   const allFillUps = await prisma.fuelFillUp.findMany({
     where: {
       userId,
-      date: { gte: fromDate },
+      date: { gte: fromDate, ...(toDate ? { lte: toDate } : {}) },
+
       ...(vehicleId ? { vehicleId } : {}),
     },
     orderBy: { date: "desc" },

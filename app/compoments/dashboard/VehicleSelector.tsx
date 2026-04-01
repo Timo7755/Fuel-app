@@ -19,6 +19,7 @@ export default function VehicleSelector() {
   const currentVehicleId = searchParams.get("vehicleId");
   const currentRange = searchParams.get("range") ?? "1M";
   const currentMode = searchParams.get("mode") ?? "rolling";
+  const currentFuelType = searchParams.get("fuelType");
 
   const selectedVehicle = vehicles.find(
     (v) => String(v.id) === currentVehicleId,
@@ -49,6 +50,8 @@ export default function VehicleSelector() {
     params.set("range", currentRange);
     params.set("mode", currentMode);
     if (vehicleId) params.set("vehicleId", vehicleId);
+    if (currentFuelType) params.set("fuelType", currentFuelType);
+    // month is intentionally cleared when switching vehicles
     router.push(`?${params.toString()}`);
     setOpen(false);
 

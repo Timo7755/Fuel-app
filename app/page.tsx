@@ -22,6 +22,7 @@ type Props = {
     mode?: string;
     vehicleId?: string;
     fuelType?: string;
+    month?: string;
   }>;
 };
 export default async function Home({ searchParams }: Props) {
@@ -30,6 +31,7 @@ export default async function Home({ searchParams }: Props) {
     mode: modeParam,
     vehicleId: vehicleIdParam,
     fuelType: fuelTypeParam,
+    month: monthParam,
   } = await searchParams;
 
   const range: Range = VALID_RANGES.includes(rangeParam as Range)
@@ -39,6 +41,8 @@ export default async function Home({ searchParams }: Props) {
   const mode = modeParam === "calendar" ? "calendar" : "rolling";
 
   const vehicleId = vehicleIdParam ? Number(vehicleIdParam) : undefined;
+
+  const fuelType = fuelTypeParam as FuelType | undefined;
 
   if (!vehicleId || !rangeParam) {
     const session = await auth();
@@ -65,12 +69,7 @@ export default async function Home({ searchParams }: Props) {
 
   try {
     const { summary, fillUps, vehicles, availableFuelTypes } =
-      await getDashboardData(
-        range,
-        mode,
-        vehicleId,
-        fuelTypeParam as FuelType | undefined,
-      );
+      await getDashboardData(range, mode, vehicleId, fuelType, monthParam);
 
     return (
       <main className="mx-auto w-full max-w-5xl px-6 py-8">
