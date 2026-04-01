@@ -163,7 +163,7 @@ export default function FuelChart({ fillUps }: Props) {
           Cost per fill-up
         </h2>
         <p className="text-xs text-muted-foreground mb-4">
-          How much you spent at each fill-up
+          See how much you spend on each fuel fill-up
         </p>
         <ResponsiveContainer width="100%" height={220}>
           <AreaChart
@@ -229,9 +229,7 @@ export default function FuelChart({ fillUps }: Props) {
           <h2 className="text-sm font-semibold text-foreground mb-0.5">
             See how much you drive per month
           </h2>
-          <p className="text-xs text-muted-foreground mb-4">
-            Estimated km driven per month
-          </p>
+
           <ResponsiveContainer width="100%" height={220}>
             <BarChart
               data={kmData}

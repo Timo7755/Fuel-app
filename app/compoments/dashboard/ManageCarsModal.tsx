@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Pencil, Trash2, Check, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { X, Pencil, Trash2, Check, XCircle, Plus } from "lucide-react";
+import AddVehicleModal from "./AddVehicleModal";
 
 type Vehicle = {
   id: number;
@@ -29,6 +30,7 @@ export default function ManageCarsModal({ isOpen, onClose }: Props) {
   const router = useRouter();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
+  const [addVehicleOpen, setAddVehicleOpen] = useState(false);
 
   // Edit state
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -149,6 +151,15 @@ export default function ManageCarsModal({ isOpen, onClose }: Props) {
       role="dialog"
       aria-modal="true"
     >
+      <AddVehicleModal
+        isOpen={addVehicleOpen}
+        onClose={async () => {
+          setAddVehicleOpen(false);
+          await loadVehicles();
+          router.refresh();
+        }}
+      />
+
       <button
         type="button"
         onClick={onClose}
@@ -327,6 +338,14 @@ export default function ManageCarsModal({ isOpen, onClose }: Props) {
             ))}
           </ul>
         )}
+        <button
+          type="button"
+          onClick={() => setAddVehicleOpen(true)}
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border py-2.5 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground"
+        >
+          <Plus className="h-4 w-4" />
+          Add car
+        </button>
       </div>
     </div>
   );
