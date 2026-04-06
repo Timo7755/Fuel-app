@@ -85,25 +85,27 @@ export default function FuelChart({ fillUps }: Props) {
     totalCost: Number(m.totalCost.toFixed(2)),
   }));
 
-  // Monthly km — only fill-ups with odometer
-  const kmMap: Record<string, { month: string; odometers: number[] }> = {};
-  for (const f of filtered) {
-    if (f.odometerKm === null) continue;
-    const key = new Date(f.date).toLocaleDateString("en-GB", {
+  // Monthly km — calculated from consecutive odometer readings
+  const withOdo = filtered
+    .filter((f) => f.odometerKm !== null)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  const kmMonthMap: Record<string, number> = {};
+  for (let i = 1; i < withOdo.length; i++) {
+    const dist = withOdo[i].odometerKm! - withOdo[i - 1].odometerKm!;
+    if (dist <= 0) continue; // skip if odometer went backwards (bad data)
+    const key = new Date(withOdo[i].date).toLocaleDateString("en-GB", {
       month: "short",
       year: "2-digit",
     });
-    if (!kmMap[key]) kmMap[key] = { month: key, odometers: [] };
-    kmMap[key].odometers.push(f.odometerKm);
+    kmMonthMap[key] = (kmMonthMap[key] ?? 0) + dist;
   }
-  const kmData = Object.values(kmMap)
-    .map((m) => ({
-      month: m.month,
-      km: Math.round(Math.max(...m.odometers) - Math.min(...m.odometers)),
-    }))
-    .filter((m) => m.km > 0);
+  const kmData = Object.entries(kmMonthMap).map(([month, km]) => ({
+    month,
+    km: Math.round(km),
+  }));
 
-  const hasKmData = kmData.length >= 2;
+  const hasKmData = kmData.length >= 1;
 
   return (
     <div className="space-y-4">
