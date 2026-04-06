@@ -61,6 +61,7 @@ export default function AddFillUpModal({ isOpen, onClose, onSuccess }: Props) {
   const [isMotorway, setIsMotorway] = useState(false);
   const [focused, setFocused] = useState<"liters" | "cost" | null>(null);
   const [autoCalc, setAutoCalc] = useState(true);
+  const [lastOdometer, setLastOdometer] = useState<number | null>(null);
 
   // Effect to fetch fuel rates
   useEffect(() => {
@@ -177,6 +178,15 @@ export default function AddFillUpModal({ isOpen, onClose, onSuccess }: Props) {
           : "PETROL_95",
     );
   }, [vehicleId, vehicles]);
+
+  // Effect to fetch last odometer for selected vehicle
+  useEffect(() => {
+    if (!vehicleId) return;
+    fetch(`/api/vehicles/${vehicleId}/last-odometer`)
+      .then((res) => res.json())
+      .then((data) => setLastOdometer(data.odometerKm))
+      .catch(() => setLastOdometer(null));
+  }, [vehicleId]);
 
   // Function to reload the vehicles
   async function reloadVehicles() {
@@ -428,7 +438,8 @@ export default function AddFillUpModal({ isOpen, onClose, onSuccess }: Props) {
                 <label className="flex flex-col gap-1">
                   <span className="text-sm text-muted-foreground">Liters</span>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     step="0.01"
                     min="0"
                     value={liters}
@@ -436,7 +447,9 @@ export default function AddFillUpModal({ isOpen, onClose, onSuccess }: Props) {
                       setFocused("liters");
                       e.target.select();
                     }}
-                    onChange={(e) => setLiters(e.target.value)}
+                    onChange={(e) =>
+                      setLiters(e.target.value.replace(",", "."))
+                    }
                     className="w-full rounded-md border border-border bg-background px-3 py-2 text-right tabular-nums text-foreground outline-none transition focus:ring-2 focus:ring-primary/25"
                     required
                   />
@@ -446,7 +459,8 @@ export default function AddFillUpModal({ isOpen, onClose, onSuccess }: Props) {
                     Cost (EUR)
                   </span>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     step="0.01"
                     min="0"
                     value={totalCost}
@@ -454,7 +468,9 @@ export default function AddFillUpModal({ isOpen, onClose, onSuccess }: Props) {
                       setFocused("cost");
                       e.target.select();
                     }}
-                    onChange={(e) => setTotalCost(e.target.value)}
+                    onChange={(e) =>
+                      setTotalCost(e.target.value.replace(",", "."))
+                    }
                     className="w-full rounded-md border border-border bg-background px-3 py-2 text-right tabular-nums text-foreground outline-none transition focus:ring-2 focus:ring-primary/25"
                     required
                   />
@@ -494,7 +510,11 @@ export default function AddFillUpModal({ isOpen, onClose, onSuccess }: Props) {
                   inputMode="numeric"
                   value={odometerKm}
                   onChange={handleOdometerChange}
-                  placeholder="example:100.000"
+                  placeholder={
+                    lastOdometer !== null
+                      ? `Last: ${lastOdometer.toLocaleString("en-GB")} km`
+                      : "e.g. 100.000"
+                  }
                   className="w-full rounded-md border border-border bg-background px-3 py-2 text-center tabular-nums text-foreground outline-none transition focus:ring-2 focus:ring-primary/25"
                 />
               </label>

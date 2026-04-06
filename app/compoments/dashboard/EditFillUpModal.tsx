@@ -156,11 +156,12 @@ export default function EditFillUpModal({ entry, vehicle, onClose }: Props) {
             <label className="flex flex-col gap-1">
               <span className="text-sm text-muted-foreground">Liters</span>
               <input
-                type="number"
+                type="text"
+                inputMode="decimal"
                 step="0.01"
                 min="0"
                 value={liters}
-                onChange={(e) => setLiters(e.target.value)}
+                onChange={(e) => setLiters(e.target.value.replace(",", "."))}
                 className="w-full rounded-md border border-border bg-background px-3 py-2 text-right tabular-nums text-foreground outline-none transition focus:ring-2 focus:ring-primary/25"
                 required
               />
@@ -169,11 +170,12 @@ export default function EditFillUpModal({ entry, vehicle, onClose }: Props) {
             <label className="flex flex-col gap-1">
               <span className="text-sm text-muted-foreground">Cost (EUR)</span>
               <input
-                type="number"
+                type="text"
+                inputMode="decimal"
                 step="0.01"
                 min="0"
                 value={totalCost}
-                onChange={(e) => setTotalCost(e.target.value)}
+                onChange={(e) => setTotalCost(e.target.value.replace(",", "."))}
                 className="w-full rounded-md border border-border bg-background px-3 py-2 text-right tabular-nums text-foreground outline-none transition focus:ring-2 focus:ring-primary/25"
                 required
               />

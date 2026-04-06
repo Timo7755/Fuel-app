@@ -212,7 +212,7 @@ export default function FillUpTable({
 
                   {entry.odometerKm !== null && (
                     <p className="text-xs text-muted-foreground">
-                      Odometer: {entry.odometerKm.toLocaleString()} km
+                      Odometer: {entry.odometerKm.toLocaleString("en-GB")} km
                     </p>
                   )}
 
@@ -267,7 +267,7 @@ export default function FillUpTable({
                   <div className="flex justify-end items-center">
                     <span className="tabular-nums">
                       {entry.odometerKm !== null
-                        ? `${entry.odometerKm.toLocaleString()} km`
+                        ? `${entry.odometerKm.toLocaleString("en-GB")} km`
                         : "—"}
                     </span>
                   </div>

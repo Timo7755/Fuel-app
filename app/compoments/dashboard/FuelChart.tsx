@@ -12,12 +12,13 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import type { FillUpEntry } from "@/lib/dashboard/types";
+import type { FillUpEntry, Vehicle } from "@/lib/dashboard/types";
 
 type Range = "3M" | "6M" | "1Y" | "all";
 
 type Props = {
   fillUps: FillUpEntry[];
+  vehicles: Vehicle[];
 };
 
 const RANGES: { label: string; value: Range }[] = [
@@ -43,8 +44,11 @@ function getFromDate(range: Range): Date | null {
   return new Date(now.getFullYear(), now.getMonth() - months, now.getDate());
 }
 
-export default function FuelChart({ fillUps }: Props) {
+export default function FuelChart({ fillUps, vehicles }: Props) {
   const [range, setRange] = useState<Range>("1Y");
+  const [selectedVehicleId, setSelectedVehicleId] = useState<number>(
+    vehicles[0]?.id ?? 0,
+  );
 
   const fromDate = getFromDate(range);
   const filtered = fromDate
@@ -85,15 +89,16 @@ export default function FuelChart({ fillUps }: Props) {
     totalCost: Number(m.totalCost.toFixed(2)),
   }));
 
-  // Monthly km — calculated from consecutive odometer readings
-  const withOdo = filtered
+  // Monthly km — only for selected vehicle
+  const kmFillUps = filtered.filter((f) => f.vehicleId === selectedVehicleId);
+  const withOdo = kmFillUps
     .filter((f) => f.odometerKm !== null)
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   const kmMonthMap: Record<string, number> = {};
   for (let i = 1; i < withOdo.length; i++) {
     const dist = withOdo[i].odometerKm! - withOdo[i - 1].odometerKm!;
-    if (dist <= 0) continue; // skip if odometer went backwards (bad data)
+    if (dist <= 0) continue;
     const key = new Date(withOdo[i].date).toLocaleDateString("en-GB", {
       month: "short",
       year: "2-digit",
@@ -223,6 +228,21 @@ export default function FuelChart({ fillUps }: Props) {
             />
           </AreaChart>
         </ResponsiveContainer>
+      </div>
+      {/* Car selector for km chart */}
+      <div className="flex items-center gap-2 mt-2">
+        <span className="text-xs text-muted-foreground">Car:</span>
+        <select
+          value={selectedVehicleId}
+          onChange={(e) => setSelectedVehicleId(Number(e.target.value))}
+          className="text-xs border border-border rounded-md px-2 py-1 bg-card text-foreground"
+        >
+          {vehicles.map((v) => (
+            <option key={v.id} value={v.id}>
+              {v.name}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Monthly km */}

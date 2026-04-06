@@ -4,7 +4,7 @@ import FuelChart from "../compoments/dashboard/FuelChart";
 export const dynamic = "force-dynamic";
 
 export default async function StatsPage() {
-  const fillUps = await getStatsData();
+  const { fillUps, vehicles } = await getStatsData();
 
   return (
     <main className="mx-auto w-full max-w-5xl px-6 py-8">
@@ -14,7 +14,7 @@ export default async function StatsPage() {
           Your fuel trends over time
         </p>
       </div>
-      <FuelChart fillUps={fillUps} />
+      <FuelChart fillUps={fillUps} vehicles={vehicles} />
     </main>
   );
 }
