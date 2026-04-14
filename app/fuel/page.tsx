@@ -29,21 +29,8 @@ export default async function FuelPage() {
   const latest =
     serialized.length > 0 ? serialized[serialized.length - 1] : null;
 
-  const twoWeeksAgo = latest ? new Date(latest.capturedAt) : new Date();
-  twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
-
   const reference =
-    serialized.length > 1
-      ? serialized.reduce((prev, curr) => {
-          const prevDiff = Math.abs(
-            new Date(prev.capturedAt).getTime() - twoWeeksAgo.getTime(),
-          );
-          const currDiff = Math.abs(
-            new Date(curr.capturedAt).getTime() - twoWeeksAgo.getTime(),
-          );
-          return currDiff < prevDiff ? curr : prev;
-        })
-      : null;
+    serialized.length > 1 ? serialized[serialized.length - 2] : null;
 
   const validReference =
     reference && latest && reference.capturedAt !== latest.capturedAt
