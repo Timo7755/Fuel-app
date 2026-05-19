@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
     orderBy: { capturedAt: "desc" },
   });
 
-  const THRESHOLD = 0.005;
+  const THRESHOLD = 0.02;
 
   const twoWeeksAgo = new Date();
   twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
@@ -40,20 +40,42 @@ export async function GET(req: NextRequest) {
       THRESHOLD ||
     Math.abs((latest?.motorwayLpg ?? 0) - (motorwayAvg.lpg ?? 0)) > THRESHOLD;
 
-  if (changed) {
-    await prisma.fuelPriceSnapshot.create({
-      data: {
-        localP95: localAvg.petrol95,
-        localDiesel: localAvg.diesel,
-        localP100: localAvg.petrol100,
-        localLpg: localAvg.lpg,
-        motorwayP95: motorwayAvg.petrol95,
-        motorwayDiesel: motorwayAvg.diesel,
-        motorwayP100: motorwayAvg.petrol100,
-        motorwayLpg: motorwayAvg.lpg,
-      },
+  const shouldUpdate = forceUpdate || priceChanged;
+
+  if (shouldUpdate) {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const todaySnapshot = await prisma.fuelPriceSnapshot.findFirst({
+      where: { capturedAt: { gte: todayStart } },
     });
+
+    const data = {
+      localP95: localAvg.petrol95,
+      localDiesel: localAvg.diesel,
+      localP100: localAvg.petrol100,
+      localLpg: localAvg.lpg,
+      motorwayP95: motorwayAvg.petrol95,
+      motorwayDiesel: motorwayAvg.diesel,
+      motorwayP100: motorwayAvg.petrol100,
+      motorwayLpg: motorwayAvg.lpg,
+    };
+
+    if (todaySnapshot) {
+      await prisma.fuelPriceSnapshot.update({
+        where: { id: todaySnapshot.id },
+        data,
+      });
+    } else {
+      await prisma.fuelPriceSnapshot.create({ data });
+    }
   }
 
-  return Response.json({ ok: true, changed, capturedAt: new Date() });
+  return Response.json({
+    ok: true,
+    skipped: !shouldUpdate,
+    priceChanged,
+    forceUpdate,
+    capturedAt: new Date(),
+  });
 }
