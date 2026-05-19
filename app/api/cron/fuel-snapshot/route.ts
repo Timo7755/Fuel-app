@@ -20,6 +20,16 @@ export async function GET(req: NextRequest) {
     orderBy: { capturedAt: "desc" },
   });
 
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  if (latest && latest.capturedAt >= todayStart) {
+    return Response.json({
+      ok: true,
+      skipped: true,
+      reason: "Already saved today",
+    });
+  }
+
   const THRESHOLD = 0.02;
   const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
   const forceUpdate = !latest || latest.capturedAt < fourteenDaysAgo;
