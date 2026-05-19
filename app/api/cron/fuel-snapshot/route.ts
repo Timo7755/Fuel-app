@@ -20,9 +20,11 @@ export async function GET(req: NextRequest) {
     orderBy: { capturedAt: "desc" },
   });
 
-  const THRESHOLD = 0.02;
-  const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
-  const forceUpdate = !latest || latest.capturedAt < fourteenDaysAgo;
+  const THRESHOLD = 0.005;
+
+  const twoWeeksAgo = new Date();
+  twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+  const forceUpdate = !latest || latest.capturedAt < twoWeeksAgo;
 
   const priceChanged =
     Math.abs((latest?.localP95 ?? 0) - (localAvg.petrol95 ?? 0)) > THRESHOLD ||
@@ -38,7 +40,7 @@ export async function GET(req: NextRequest) {
       THRESHOLD ||
     Math.abs((latest?.motorwayLpg ?? 0) - (motorwayAvg.lpg ?? 0)) > THRESHOLD;
 
-  if (priceChanged || forceUpdate) {
+  if (changed) {
     await prisma.fuelPriceSnapshot.create({
       data: {
         localP95: localAvg.petrol95,
@@ -53,10 +55,5 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  return Response.json({
-    ok: true,
-    priceChanged,
-    forceUpdate,
-    capturedAt: new Date(),
-  });
+  return Response.json({ ok: true, changed, capturedAt: new Date() });
 }
